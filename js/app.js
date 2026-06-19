@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.8.8
+Versión: v1.8.9
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.8.8';
+const APP_VERSION = 'v1.8.9';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -26,7 +26,7 @@ const MOR_PANEL_ADM_URL = 'https://www.scad.mx/mor-panel-adm';
 const APP_CONFIG = {
   nombre: 'MORENA QRO',
   subtitulo: 'Capacitación · Querétaro',
-  versionLabel: 'MORENA QRO Capacitación · v1.8.8'
+  versionLabel: 'MORENA QRO Capacitación · v1.8.9'
 };
 
 /* =========================================================
@@ -560,6 +560,22 @@ function abrirPanelADM() {
   const url = `${MOR_PANEL_ADM_URL}?memberId=${encodeURIComponent(memberId)}`;
   window.location.href = url;
 }
+
+function renderMensajesNavCard() {
+  const pendientes = Number(appState.mensajesPendientesTotal || 0);
+
+  return `
+    <button class="nav-card" type="button" data-view="mensajes">
+      <div class="nav-icon">✉</div>
+      <p class="nav-title">Mensajes</p>
+      <p class="nav-desc">Avisos recibidos</p>
+      ${pendientes > 0 ? `
+        <span class="badge warn nav-badge">${pendientes}</span>
+      ` : ''}
+    </button>
+  `;
+}
+
 /* =========================================================
    BLOQUE 05. NAVEGACIÓN
    ========================================================= */
@@ -668,7 +684,7 @@ function renderInicio() {
         ${renderNavCard('D', 'Documentos', 'Materiales disponibles', 'documentos')}
         ${renderNavCard('A', 'Actividades', 'Agenda y capacitación', 'actividades')}
         ${renderNavCard('M', 'Multimedia', 'Videos y recursos', 'multimedia')}
-        ${renderNavCard('✉', 'Mensajes', 'Avisos recibidos', 'mensajes')}
+        ${renderMensajesNavCard()}
         ${renderNavCard('P', 'Perfil', 'Datos personales', 'perfil')}
          ${usuarioEsADM() ? `
   <button class="nav-card" type="button" data-action="abrir-panel-adm">

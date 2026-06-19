@@ -1,1 +1,382 @@
+/*
+MORENA QRO Capacitación
+Archivo: css/styles.css
+Versión: v1
+Alcance: estilos base de la PWA usuario
+*/
 
+/* =========================================================
+   BLOQUE 01. VARIABLES
+   ========================================================= */
+
+:root {
+  --morena-primary: #7A0B2E;
+  --morena-dark: #3B0618;
+  --morena-soft: #F8EEF3;
+  --morena-border: rgba(122, 11, 46, 0.18);
+
+  --text-main: #261018;
+  --text-muted: #75616A;
+  --white: #FFFFFF;
+
+  --ok: #137A3A;
+  --warn: #B45309;
+  --danger: #B91C1C;
+
+  --shadow: 0 14px 34px rgba(59, 6, 24, 0.13);
+}
+
+/* =========================================================
+   BLOQUE 02. RESET BASE
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(122, 11, 46, 0.14), transparent 34%),
+    linear-gradient(180deg, #FFFFFF 0%, #F9F2F5 100%);
+  color: var(--text-main);
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 12px;
+}
+
+/* =========================================================
+   BLOQUE 03. LAYOUT APP
+   ========================================================= */
+
+.app {
+  width: 100%;
+  max-width: 520px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid var(--morena-border);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.app-body {
+  padding: 12px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* =========================================================
+   BLOQUE 04. HEADER / TOPBAR
+   ========================================================= */
+
+.app-header {
+  position: relative;
+  padding: 16px 16px 13px;
+  text-align: center;
+  color: var(--white);
+  background: linear-gradient(135deg, rgba(122, 11, 46, 0.98), rgba(59, 6, 24, 0.96));
+}
+
+.app-logo {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 7px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  font-weight: 850;
+  font-size: 18px;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.05;
+  font-weight: 820;
+}
+
+.app-subtitle {
+  margin: 5px 0 0;
+  font-size: 12px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.app-version {
+  padding: 0 18px 13px;
+  text-align: center;
+  font-size: 10.5px;
+  color: rgba(117, 97, 106, 0.78);
+}
+
+/* =========================================================
+   BLOQUE 05. NAVEGACIÓN
+   ========================================================= */
+
+.nav-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.nav-card {
+  width: 100%;
+  min-height: 70px;
+  border: 1px solid var(--morena-border);
+  border-radius: 16px;
+  background: #FFFFFF;
+  color: var(--text-main);
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nav-card:active {
+  transform: scale(0.99);
+}
+
+.nav-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  background: var(--morena-soft);
+  color: var(--morena-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 850;
+  margin-bottom: 7px;
+}
+
+.nav-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 820;
+  line-height: 1.15;
+}
+
+.nav-desc {
+  margin: 3px 0 0;
+  font-size: 10.8px;
+  line-height: 1.25;
+  color: var(--text-muted);
+}
+
+/* =========================================================
+   BLOQUE 06. CARDS
+   ========================================================= */
+
+.section-title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 850;
+  line-height: 1.15;
+}
+
+.section-note {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.info-card {
+  border: 1px solid var(--morena-border);
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 11px;
+  margin-bottom: 8px;
+}
+
+.info-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 820;
+  line-height: 1.2;
+}
+
+.info-meta {
+  margin: 4px 0 0;
+  font-size: 11.8px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+/* =========================================================
+   BLOQUE 07. LISTAS COMPACTAS
+   ========================================================= */
+
+.list {
+  display: grid;
+  gap: 8px;
+}
+
+.list-row {
+  width: 100%;
+  border: 1px solid var(--morena-border);
+  background: #FFFFFF;
+  border-radius: 15px;
+  padding: 9px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+}
+
+.list-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 820;
+  line-height: 1.2;
+}
+
+.list-meta {
+  margin: 3px 0 0;
+  font-size: 11.3px;
+  color: var(--text-muted);
+  line-height: 1.25;
+}
+
+/* =========================================================
+   BLOQUE 08. ESTADOS / BADGES
+   ========================================================= */
+
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.badge {
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: var(--morena-soft);
+  color: var(--morena-primary);
+  border: 1px solid var(--morena-border);
+  font-size: 10.8px;
+  font-weight: 760;
+}
+
+.badge.ok {
+  background: rgba(19, 122, 58, 0.08);
+  color: var(--ok);
+  border-color: rgba(19, 122, 58, 0.22);
+}
+
+.badge.warn {
+  background: rgba(180, 83, 9, 0.08);
+  color: var(--warn);
+  border-color: rgba(180, 83, 9, 0.22);
+}
+
+.badge.danger {
+  background: #FFF1F2;
+  color: var(--danger);
+  border-color: rgba(185, 28, 28, 0.22);
+}
+
+.empty {
+  border: 1px dashed var(--morena-border);
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 16px;
+  padding: 14px 12px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+/* =========================================================
+   BLOQUE 09. FORMULARIOS / BOTONES
+   ========================================================= */
+
+.input {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--morena-border);
+  border-radius: 13px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--text-main);
+  background: #FFFFFF;
+  outline: none;
+}
+
+.input:focus {
+  border-color: rgba(122, 11, 46, 0.52);
+  box-shadow: 0 0 0 3px rgba(122, 11, 46, 0.08);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn {
+  width: 100%;
+  min-height: 38px;
+  border: none;
+  border-radius: 13px;
+  padding: 9px 10px;
+  font-size: 12.5px;
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--morena-primary);
+  color: var(--white);
+}
+
+.btn-secondary {
+  background: var(--morena-soft);
+  color: var(--morena-primary);
+  border: 1px solid var(--morena-border);
+}
+
+/* =========================================================
+   BLOQUE 10. RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 360px) {
+  body {
+    padding: 10px;
+  }
+
+  .app-body {
+    padding: 11px;
+  }
+
+  .app-title {
+    font-size: 19px;
+  }
+
+  .nav-grid {
+    gap: 7px;
+  }
+
+  .nav-card {
+    min-height: 66px;
+    padding: 9px;
+  }
+}

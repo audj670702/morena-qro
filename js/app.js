@@ -32,8 +32,6 @@ const APP_CONFIG = {
   versionLabel: APP_VERSION
 };
 
-let multimediaCarruselTimer = null;
-
 /* =========================================================
    BLOQUE 02. ESTADO GLOBAL
    ========================================================= */
@@ -641,8 +639,7 @@ function renderApp() {
     </main>
   `;
 
-    bindEventos();
-  iniciarCarruselMultimediaInicio();
+  bindEventos();
 }
 }
 
@@ -1796,38 +1793,6 @@ function abrirMultimediaReciente() {
   }
 
   renderApp();
-}
-
-function iniciarCarruselMultimediaInicio() {
-  if (multimediaCarruselTimer) {
-    clearInterval(multimediaCarruselTimer);
-    multimediaCarruselTimer = null;
-  }
-
-  if (appState.vistaActual !== 'inicio') {
-    return;
-  }
-
-  if (!Array.isArray(appState.multimedia) || appState.multimedia.length <= 1) {
-    return;
-  }
-
-  multimediaCarruselTimer = setInterval(function () {
-    if (appState.vistaActual !== 'inicio') {
-      clearInterval(multimediaCarruselTimer);
-      multimediaCarruselTimer = null;
-      return;
-    }
-
-    const actual = obtenerMultimediaActual();
-    const indexActual = appState.multimedia.findIndex((item) => item.id === actual.id);
-    const siguienteIndex = indexActual >= 0
-      ? (indexActual + 1) % appState.multimedia.length
-      : 0;
-
-    appState.multimediaActualId = appState.multimedia[siguienteIndex].id;
-    renderApp();
-  }, 3000);
 }
 
 function cerrarSesionLocal() {

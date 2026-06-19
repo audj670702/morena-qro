@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1';
+const APP_VERSION = 'v1.1';
 
 const APP_CONFIG = {
   nombre: 'MORENA QRO',

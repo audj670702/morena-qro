@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.1
+Versión: v1.3
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,13 +9,14 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.2';
+const APP_VERSION = 'v1.3';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
+const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 
 const APP_CONFIG = {
   nombre: 'MORENA QRO',
   subtitulo: 'Capacitación · Querétaro',
-  versionLabel: 'MORENA QRO Capacitación · v1.2'
+  versionLabel: 'MORENA QRO Capacitación · v1.3'
 };
 
 /* =========================================================
@@ -29,7 +30,10 @@ const appState = {
     codigo: 'USU-0000',
     rol: 'USU',
     municipio: 'Querétaro'
-  }
+  },
+  documentos: [],
+  documentosCargando: false,
+  documentosError: ''
 };
 
 /* =========================================================
@@ -115,6 +119,39 @@ async function cargarUsuarioPwa(memberId) {
     console.error('Error al cargar usuario PWA:', error);
 
     appState.usuario.codigo = 'Error de conexión';
+    renderApp();
+  }
+}
+
+async function cargarDocumentosPwa(memberId) {
+  try {
+    appState.documentosCargando = true;
+    appState.documentosError = '';
+    renderApp();
+
+    const url = `${MOR_API_DOCUMENTOS}?memberId=${encodeURIComponent(memberId)}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!data.ok) {
+      appState.documentos = [];
+      appState.documentosError = data.codigo || 'No fue posible cargar documentos.';
+      appState.documentosCargando = false;
+      renderApp();
+      return;
+    }
+
+    appState.documentos = Array.isArray(data.documentos) ? data.documentos : [];
+    appState.documentosCargando = false;
+    renderApp();
+
+  } catch (error) {
+    console.error('Error al cargar documentos PWA:', error);
+
+    appState.documentos = [];
+    appState.documentosError = 'Error de conexión.';
+    appState.documentosCargando = false;
     renderApp();
   }
 }
@@ -253,25 +290,68 @@ function renderInicio() {
    ========================================================= */
 
 function renderDocumentos() {
+  const contenido = renderListaDocumentos();
+
   return `
     <section>
       <h2 class="section-title">Documentos</h2>
       <p class="section-note">Biblioteca disponible para consulta.</p>
 
-      <div class="list">
-        ${datosDemo.documentos.map((item) => `
-          <article class="list-row">
-            <div>
-              <p class="list-title">${escapeHTML(item.titulo)}</p>
-              <p class="list-meta">${escapeHTML(item.codigo)} · ${escapeHTML(item.tipo)}</p>
-            </div>
-            <span class="badge ok">${escapeHTML(item.estado)}</span>
-          </article>
-        `).join('')}
-      </div>
+      ${contenido}
 
       ${renderBackButton()}
     </section>
+  `;
+}
+
+function renderListaDocumentos() {
+  if (appState.documentosCargando) {
+    return `
+      <article class="info-card">
+        <h3 class="info-title">Cargando documentos</h3>
+        <p class="info-meta">Consulta en proceso.</p>
+      </article>
+    `;
+  }
+
+  if (appState.documentosError) {
+    return `
+      <article class="info-card">
+        <h3 class="info-title">Documentos no disponibles</h3>
+        <p class="info-meta">${escapeHTML(appState.documentosError)}</p>
+      </article>
+    `;
+  }
+
+  if (!appState.documentos.length) {
+    return `
+      <article class="info-card">
+        <h3 class="info-title">Sin documentos disponibles</h3>
+        <p class="info-meta">No hay documentos asignados para tu perfil.</p>
+      </article>
+    `;
+  }
+
+  return `
+    <div class="list">
+      ${appState.documentos.map((item) => `
+        <article class="list-row">
+          <div>
+            <p class="list-title">${escapeHTML(item.titulo)}</p>
+            <p class="list-meta">
+              ${escapeHTML(item.codigoControl || 'DOC')} · ${escapeHTML(item.tipoDocumento || 'Documento')}
+            </p>
+          </div>
+          ${item.urlDocumento ? `
+            <a class="badge ok" href="${escapeHTML(item.urlDocumento)}" target="_blank" rel="noopener">
+              Abrir
+            </a>
+          ` : `
+            <span class="badge">Sin enlace</span>
+          `}
+        </article>
+      `).join('')}
+    </div>
   `;
 }
 
@@ -415,9 +495,10 @@ async function inicializarApp() {
 
   renderApp();
 
-  if (memberId) {
-    await cargarUsuarioPwa(memberId);
-  }
+if (memberId) {
+  await cargarUsuarioPwa(memberId);
+  await cargarDocumentosPwa(memberId);
+}
 }
 
 document.addEventListener('DOMContentLoaded', inicializarApp);

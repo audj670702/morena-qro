@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.8.6
+Versión: v1.8.7
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.8.6';
+const APP_VERSION = 'v1.8.7';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -26,7 +26,7 @@ const MOR_PANEL_ADM_URL = 'https://www.scad.mx/mor-panel-adm';
 const APP_CONFIG = {
   nombre: 'MORENA QRO',
   subtitulo: 'Capacitación · Querétaro',
-  versionLabel: 'MORENA QRO Capacitación · v1.8.6'
+  versionLabel: 'MORENA QRO Capacitación · v1.8.7'
 };
 
 /* =========================================================
@@ -523,6 +523,26 @@ function escapeHTML(value) {
 function setVista(vista) {
   appState.vistaActual = vista;
   renderApp();
+}
+
+async function actualizarDatosPwa() {
+  const memberId = appState.usuario.memberId || obtenerParametroURL('memberId');
+
+  if (!memberId) {
+    renderApp();
+    return;
+  }
+
+  if (appState.vistaActual === 'mensajes') {
+    await cargarMensajesPwa(memberId);
+    return;
+  }
+
+  await cargarUsuarioPwa(memberId);
+  await cargarDocumentosPwa(memberId);
+  await cargarActividadesPwa(memberId);
+  await cargarMultimediaPwa(memberId);
+  await cargarMensajesPwa(memberId);
 }
 
 function usuarioEsADM() {
@@ -1412,11 +1432,11 @@ function bindEventos() {
     });
   });
 
-  document.querySelectorAll('[data-action="refresh"]').forEach((el) => {
-    el.addEventListener('click', function () {
-      renderApp();
-    });
+document.querySelectorAll('[data-action="refresh"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    actualizarDatosPwa();
   });
+});
 
     document.querySelectorAll('[data-action^="multimedia"]').forEach((el) => {
     el.addEventListener('click', function () {

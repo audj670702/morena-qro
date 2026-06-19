@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.2
+Versión: v1.10.2.5
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.2';
+const APP_VERSION = 'v1.10.2.5';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -703,8 +703,7 @@ function renderInicio() {
   return `
     <section class="home-screen">
       ${renderIdentityCard()}
-      ${renderInicioBannerMultimedia()}
-      ${renderInicioBannerFacebook()}
+      ${renderInicioContenidoDestacado()}
 
       <div class="nav-grid nav-list">
         ${renderModuloRow('▣', 'Mi capacitación', 'perfil', 0)}
@@ -748,46 +747,55 @@ function renderIdentityCard() {
   `;
 }
 
+function renderInicioContenidoDestacado() {
+  return `
+    <section class="home-feature-grid">
+      ${renderInicioBannerMultimedia()}
+      ${renderInicioBannerFacebook()}
+    </section>
+  `;
+}
+
 function renderInicioBannerMultimedia() {
   const item = obtenerMultimediaActual();
-  const titulo = item.titulo || 'Multimedia reciente';
-  const detalle = item.descripcion || 'Contenido reciente de capacitación.';
+  const titulo = item.titulo || 'Multimedia';
+  const detalle = item.descripcion || '';
 
   return `
-    <button class="home-banner media-recent-banner" type="button" data-action="multimedia-reciente">
-      <div class="banner-thumb">
+    <button class="home-feature-card media-feature-card" type="button" data-action="multimedia-reciente">
+      <div class="feature-visual">
         ${item.urlVistaPrevia ? `
           <img src="${escapeHTML(item.urlVistaPrevia)}" alt="${escapeHTML(titulo)}" />
         ` : `
-          <span>▶</span>
+          <span>${escapeHTML(iconoMultimedia(item.tipoMultimedia || 'Video'))}</span>
         `}
-      </div>
 
-      <div class="banner-copy">
-        <strong>Multimedia reciente</strong>
-        <span>${escapeHTML(titulo)}</span>
-        <small>${escapeHTML(detalle)}</small>
-      </div>
+        <i class="feature-play">▶</i>
 
-      <div class="banner-access">›</div>
+        <div class="feature-gradient">
+          <div class="feature-copy">
+            <strong>${escapeHTML(titulo)}</strong>
+            ${detalle ? `<small>${escapeHTML(detalle)}</small>` : ''}
+          </div>
+        </div>
+      </div>
     </button>
   `;
 }
 
 function renderInicioBannerFacebook() {
   return `
-    <button class="home-banner facebook-recent-banner" type="button" data-action="facebook-abrir">
-      <div class="banner-thumb fb-thumb">
-        <span>f</span>
-      </div>
+    <button class="home-feature-card facebook-feature-card" type="button" data-action="facebook-abrir">
+      <div class="feature-visual fb-feature-visual">
+        <span class="fb-feature-icon">f</span>
 
-      <div class="banner-copy">
-        <strong>Facebook reciente</strong>
-        <span>Contenido reciente de MORENA QRO</span>
-        <small>Abrir publicación o página oficial.</small>
+        <div class="feature-gradient">
+          <div class="feature-copy">
+            <strong>Facebook</strong>
+            <small>MORENA QRO</small>
+          </div>
+        </div>
       </div>
-
-      <div class="banner-access">›</div>
     </button>
   `;
 }

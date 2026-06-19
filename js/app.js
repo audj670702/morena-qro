@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.2
+Versión: v1.10.3
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.2';
+const APP_VERSION = 'v1.10.3';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -31,6 +31,8 @@ const APP_CONFIG = {
   subtitulo: 'Capacitación',
   versionLabel: APP_VERSION
 };
+
+let multimediaCarruselTimer = null;
 
 /* =========================================================
    BLOQUE 02. ESTADO GLOBAL
@@ -639,7 +641,9 @@ function renderApp() {
     </main>
   `;
 
-  bindEventos();
+    bindEventos();
+  iniciarCarruselMultimediaInicio();
+}
 }
 
 function renderHeader() {
@@ -749,28 +753,59 @@ function renderIdentityCard() {
 }
 
 function renderInicioBannerMultimedia() {
+  if (!appState.multimedia.length && !appState.multimediaCargando) {
+    return '';
+  }
+
+  if (appState.multimediaCargando) {
+    return `
+      <article class="media-home-carousel loading">
+        <div class="media-home-copy">
+          <strong>Multimedia</strong>
+          <span>Cargando contenido...</span>
+          <small>Consulta en proceso.</small>
+        </div>
+      </article>
+    `;
+  }
+
   const item = obtenerMultimediaActual();
-  const titulo = item.titulo || 'Multimedia reciente';
+  const titulo = item.titulo || 'Multimedia';
   const detalle = item.descripcion || 'Contenido reciente de capacitación.';
+  const total = appState.multimedia.length;
+  const actualIndex = Math.max(0, appState.multimedia.findIndex((media) => media.id === item.id));
 
   return `
-    <button class="home-banner media-recent-banner" type="button" data-action="multimedia-reciente">
-      <div class="banner-thumb">
-        ${item.urlVistaPrevia ? `
-          <img src="${escapeHTML(item.urlVistaPrevia)}" alt="${escapeHTML(titulo)}" />
-        ` : `
-          <span>▶</span>
-        `}
-      </div>
+    <article class="media-home-carousel">
+      <button class="media-home-main" type="button" data-action="multimedia-reciente">
+        <div class="media-home-thumb">
+          ${item.urlVistaPrevia ? `
+            <img src="${escapeHTML(item.urlVistaPrevia)}" alt="${escapeHTML(titulo)}" />
+          ` : `
+            <span>${escapeHTML(iconoMultimedia(item.tipoMultimedia))}</span>
+          `}
+          <i>▶</i>
+        </div>
 
-      <div class="banner-copy">
-        <strong>Multimedia reciente</strong>
-        <span>${escapeHTML(titulo)}</span>
-        <small>${escapeHTML(detalle)}</small>
-      </div>
+        <div class="media-home-copy">
+          <strong>Multimedia</strong>
+          <span>${escapeHTML(titulo)}</span>
+          <small>${escapeHTML(detalle)}</small>
 
-      <div class="banner-access">›</div>
-    </button>
+          ${total > 1 ? `
+            <div class="media-home-dots" aria-label="Carrusel multimedia">
+              ${appState.multimedia.slice(0, 5).map((media, index) => `
+                <b class="${index === actualIndex ? 'active' : ''}"></b>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      </button>
+
+      <button class="media-home-all" type="button" data-action="multimedia-ver-todo">
+        Ver todo
+      </button>
+    </article>
   `;
 }
 
@@ -1645,6 +1680,12 @@ document.querySelectorAll('[data-action="refresh"]').forEach((el) => {
         appState.multimediaCategoria = el.getAttribute('data-categoria') || 'Todos';
         renderApp();
       }
+
+      if (action === 'multimedia-ver-todo') {
+        appState.vistaActual = 'multimedia';
+        appState.multimediaModal = '';
+        renderApp();
+      }
     });
   });
 
@@ -1755,6 +1796,38 @@ function abrirMultimediaReciente() {
   }
 
   renderApp();
+}
+
+function iniciarCarruselMultimediaInicio() {
+  if (multimediaCarruselTimer) {
+    clearInterval(multimediaCarruselTimer);
+    multimediaCarruselTimer = null;
+  }
+
+  if (appState.vistaActual !== 'inicio') {
+    return;
+  }
+
+  if (!Array.isArray(appState.multimedia) || appState.multimedia.length <= 1) {
+    return;
+  }
+
+  multimediaCarruselTimer = setInterval(function () {
+    if (appState.vistaActual !== 'inicio') {
+      clearInterval(multimediaCarruselTimer);
+      multimediaCarruselTimer = null;
+      return;
+    }
+
+    const actual = obtenerMultimediaActual();
+    const indexActual = appState.multimedia.findIndex((item) => item.id === actual.id);
+    const siguienteIndex = indexActual >= 0
+      ? (indexActual + 1) % appState.multimedia.length
+      : 0;
+
+    appState.multimediaActualId = appState.multimedia[siguienteIndex].id;
+    renderApp();
+  }, 3000);
 }
 
 function cerrarSesionLocal() {

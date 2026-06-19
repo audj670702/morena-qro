@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.1
+Versión: v1.10.2
 Alcance: lógica base de navegación PWA usuario
 */
 

@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.9
+Versión: v1.8.2
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.8';
+const APP_VERSION = 'v1.8.2';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -18,7 +18,7 @@ const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
 const APP_CONFIG = {
   nombre: 'MORENA QRO',
   subtitulo: 'Capacitación · Querétaro',
-  versionLabel: 'MORENA QRO Capacitación · v1.7.8'
+  versionLabel: 'MORENA QRO Capacitación · v1.8.2'
 };
 
 /* =========================================================
@@ -601,8 +601,8 @@ function renderMultimediaContenido() {
           ${escapeHTML(actual.codigoControl || 'MUL')} · ${escapeHTML(actual.tipoMultimedia || 'Multimedia')} · ${escapeHTML(actual.categoria || 'General')}
         </div>
 
-<div class="media-actions ${actual.urlMultimedia ? '' : 'single'}">
-  ${actual.urlMultimedia ? `
+<div class="media-actions ${actual.urlEmbed ? '' : 'single'}">
+  ${actual.urlEmbed ? `
     <button class="btn btn-primary" type="button" data-action="multimedia-ver" data-id="${escapeHTML(actual.id)}">
       Ver contenido
     </button>
@@ -668,6 +668,10 @@ function renderModalMultimedia() {
     return '';
   }
 
+  if (appState.multimediaModal === 'ver') {
+    return renderModalVerMultimedia();
+  }
+
   if (appState.multimediaModal === 'info') {
     return renderModalInfoMultimedia();
   }
@@ -677,6 +681,44 @@ function renderModalMultimedia() {
   }
 
   return '';
+}
+
+function renderModalVerMultimedia() {
+  const item = obtenerMultimediaActual();
+
+  if (!item.urlEmbed) {
+    return renderModalInfoMultimedia();
+  }
+
+  return `
+    <div class="media-overlay open">
+      <section class="media-modal media-modal-player">
+        <div class="media-modal-head">
+          <h3>${escapeHTML(item.titulo || 'Multimedia')}</h3>
+          <button class="media-close" type="button" data-action="multimedia-cerrar">×</button>
+        </div>
+
+        <div class="media-player">
+          <iframe
+            src="${escapeHTML(item.urlEmbed)}"
+            title="${escapeHTML(item.titulo || 'Contenido multimedia')}"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+        </div>
+
+        <div class="media-player-meta">
+          <strong>${escapeHTML(item.codigoControl || 'MUL')}</strong>
+          <span>${escapeHTML(item.tipoMultimedia || 'Multimedia')} · ${escapeHTML(item.categoria || 'General')}</span>
+        </div>
+
+        <button class="btn btn-secondary media-full-btn" type="button" data-action="multimedia-info" data-id="${escapeHTML(item.id)}">
+          Información
+        </button>
+      </section>
+    </div>
+  `;
 }
 
 function renderModalInfoMultimedia() {
@@ -941,6 +983,25 @@ function bindEventos() {
       renderApp();
     });
   }); 
+}
+
+function verMultimedia(id) {
+  const item = appState.multimedia.find((media) => media.id === id);
+
+  if (!item) {
+    return;
+  }
+
+  appState.multimediaActualId = id;
+
+  if (!item.urlEmbed) {
+    appState.multimediaModal = 'info';
+    renderApp();
+    return;
+  }
+
+  appState.multimediaModal = 'ver';
+  renderApp();
 }
 
 /* =========================================================

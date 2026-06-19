@@ -1,9 +1,11 @@
-const CACHE_NAME = 'morena-qro-v1';
+const CACHE_NAME = 'morena-qro-v1-1';
 
 const APP_FILES = [
   './',
   './index.html',
-  './manifest.webmanifest'
+  './manifest.webmanifest',
+  './css/styles.css',
+  './js/app.js'
 ];
 
 self.addEventListener('install', (event) => {

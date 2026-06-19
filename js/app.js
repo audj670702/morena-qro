@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.8
+Versión: v1.9
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -601,21 +601,21 @@ function renderMultimediaContenido() {
           ${escapeHTML(actual.codigoControl || 'MUL')} · ${escapeHTML(actual.tipoMultimedia || 'Multimedia')} · ${escapeHTML(actual.categoria || 'General')}
         </div>
 
-        <div class="media-actions">
-          ${actual.urlMultimedia ? `
-            <button class="btn btn-primary" type="button" data-action="multimedia-ver" data-id="${escapeHTML(actual.id)}">
-              Ver contenido
-            </button>
-          ` : `
-            <button class="btn btn-secondary" type="button" data-action="multimedia-info" data-id="${escapeHTML(actual.id)}">
-              Información
-            </button>
-          `}
+<div class="media-actions ${actual.urlMultimedia ? '' : 'single'}">
+  ${actual.urlMultimedia ? `
+    <button class="btn btn-primary" type="button" data-action="multimedia-ver" data-id="${escapeHTML(actual.id)}">
+      Ver contenido
+    </button>
 
-          <button class="btn btn-secondary" type="button" data-action="multimedia-info" data-id="${escapeHTML(actual.id)}">
-            Información
-          </button>
-        </div>
+    <button class="btn btn-secondary" type="button" data-action="multimedia-info" data-id="${escapeHTML(actual.id)}">
+      Información
+    </button>
+  ` : `
+    <button class="btn btn-secondary" type="button" data-action="multimedia-info" data-id="${escapeHTML(actual.id)}">
+      Información
+    </button>
+  `}
+</div>
       </div>
     </article>
 

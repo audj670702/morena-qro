@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.7
+Versión: v1.8
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,15 +9,16 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.7.1';
+const APP_VERSION = 'v1.8';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
+const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
 
 const APP_CONFIG = {
   nombre: 'MORENA QRO',
   subtitulo: 'Capacitación · Querétaro',
-  versionLabel: 'MORENA QRO Capacitación · v1.7.1'
+  versionLabel: 'MORENA QRO Capacitación · v1.7.8'
 };
 
 /* =========================================================
@@ -37,7 +38,15 @@ documentosCargando: false,
 documentosError: '',
 actividades: [],
 actividadesCargando: false,
-actividadesError: ''
+actividadesError: '',
+multimedia: [],
+multimediaCargando: false,
+multimediaError: '',
+multimediaActualId: '',
+multimediaModal: '',
+multimediaBusqueda: '',
+multimediaCategoria: 'Todos',
+multimediaTipo: ''
 };
 
 /* =========================================================
@@ -189,6 +198,46 @@ async function cargarActividadesPwa(memberId) {
     appState.actividades = [];
     appState.actividadesError = 'Error de conexión.';
     appState.actividadesCargando = false;
+    renderApp();
+  }
+}
+
+async function cargarMultimediaPwa(memberId) {
+  try {
+    appState.multimediaCargando = true;
+    appState.multimediaError = '';
+    renderApp();
+
+    const url = `${MOR_API_MULTIMEDIA}?memberId=${encodeURIComponent(memberId)}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!data.ok) {
+      appState.multimedia = [];
+      appState.multimediaError = data.codigo || 'No fue posible cargar multimedia.';
+      appState.multimediaCargando = false;
+      renderApp();
+      return;
+    }
+
+    appState.multimedia = Array.isArray(data.multimedia) ? data.multimedia : [];
+    appState.multimediaCargando = false;
+
+    const destacado = appState.multimedia.find((item) => item.destacadoInicio) || appState.multimedia[0];
+
+    if (destacado && !appState.multimediaActualId) {
+      appState.multimediaActualId = destacado.id;
+    }
+
+    renderApp();
+
+  } catch (error) {
+    console.error('Error al cargar multimedia PWA:', error);
+
+    appState.multimedia = [];
+    appState.multimediaError = 'Error de conexión.';
+    appState.multimediaCargando = false;
     renderApp();
   }
 }
@@ -490,23 +539,280 @@ function renderMultimedia() {
   return `
     <section>
       <h2 class="section-title">Multimedia</h2>
-      <p class="section-note">Videos, enlaces y materiales de apoyo.</p>
+      <p class="section-note">Videos, cápsulas y recursos visuales de capacitación.</p>
 
-      <div class="list">
-        ${datosDemo.multimedia.map((item) => `
-          <article class="list-row">
-            <div>
-              <p class="list-title">${escapeHTML(item.titulo)}</p>
-              <p class="list-meta">${escapeHTML(item.codigo)} · ${escapeHTML(item.tipo)}</p>
-            </div>
-            <span class="badge ok">${escapeHTML(item.estado)}</span>
-          </article>
-        `).join('')}
-      </div>
+      ${renderMultimediaContenido()}
 
       ${renderBackButton()}
+
+      ${renderModalMultimedia()}
     </section>
   `;
+}
+
+function renderMultimediaContenido() {
+  if (appState.multimediaCargando) {
+    return `
+      <article class="info-card">
+        <h3 class="info-title">Cargando multimedia</h3>
+        <p class="info-meta">Consulta en proceso.</p>
+      </article>
+    `;
+  }
+
+  if (appState.multimediaError) {
+    return `
+      <article class="info-card">
+        <h3 class="info-title">Multimedia no disponible</h3>
+        <p class="info-meta">${escapeHTML(appState.multimediaError)}</p>
+      </article>
+    `;
+  }
+
+  if (!appState.multimedia.length) {
+    return `
+      <article class="info-card">
+        <h3 class="info-title">Sin multimedia disponible</h3>
+        <p class="info-meta">No hay recursos multimedia asignados para tu perfil.</p>
+      </article>
+    `;
+  }
+
+  const actual = obtenerMultimediaActual();
+
+  return `
+    <article class="media-hero">
+      <div class="media-hero-content">
+        <span class="media-eyebrow">Recurso destacado</span>
+
+        <div class="media-visual">
+          ${actual.urlVistaPrevia ? `
+            <img src="${escapeHTML(actual.urlVistaPrevia)}" alt="${escapeHTML(actual.titulo)}" />
+          ` : `
+            <span>${escapeHTML(iconoMultimedia(actual.tipoMultimedia))}</span>
+          `}
+        </div>
+
+        <h3>${escapeHTML(actual.titulo)}</h3>
+
+        <p>${escapeHTML(actual.descripcion || 'Recurso multimedia de capacitación.')}</p>
+
+        <div class="media-meta">
+          ${escapeHTML(actual.codigoControl || 'MUL')} · ${escapeHTML(actual.tipoMultimedia || 'Multimedia')} · ${escapeHTML(actual.categoria || 'General')}
+        </div>
+
+        <div class="media-actions">
+          ${actual.urlMultimedia ? `
+            <button class="btn btn-primary" type="button" data-action="multimedia-ver" data-id="${escapeHTML(actual.id)}">
+              Ver contenido
+            </button>
+          ` : `
+            <button class="btn btn-secondary" type="button" data-action="multimedia-info" data-id="${escapeHTML(actual.id)}">
+              Información
+            </button>
+          `}
+
+          <button class="btn btn-secondary" type="button" data-action="multimedia-info" data-id="${escapeHTML(actual.id)}">
+            Información
+          </button>
+        </div>
+      </div>
+    </article>
+
+    <div class="media-action-grid">
+      <button class="media-action-card" type="button" data-action="multimedia-buscar">
+        <strong>Buscar contenido</strong>
+        <span>Explora por categoría, tipo o palabra clave.</span>
+      </button>
+
+      <button class="media-action-card" type="button" data-action="multimedia-info" data-id="${escapeHTML(actual.id)}">
+        <strong>Detalle del recurso</strong>
+        <span>Consulta descripción, código y datos del contenido.</span>
+      </button>
+    </div>
+
+    <section class="media-section-card">
+      <div class="media-section-head">
+        <h3>Para ti</h3>
+        <button type="button" data-action="multimedia-buscar">Ver más</button>
+      </div>
+
+      <div class="media-mini-grid">
+        ${appState.multimedia.slice(0, 3).map((item) => renderMiniMultimedia(item)).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderMiniMultimedia(item) {
+  return `
+    <article class="media-mini-card">
+      <div class="media-mini-icon">${escapeHTML(iconoMultimedia(item.tipoMultimedia))}</div>
+
+      <div>
+        <p class="media-mini-title">${escapeHTML(item.titulo)}</p>
+        <p class="media-mini-meta">
+          ${escapeHTML(item.codigoControl || 'MUL')} · ${escapeHTML(item.tipoMultimedia || 'Multimedia')}
+        </p>
+      </div>
+
+      <button class="media-pill" type="button" data-action="multimedia-seleccionar" data-id="${escapeHTML(item.id)}">
+        Ver
+      </button>
+    </article>
+  `;
+}
+
+function renderModalMultimedia() {
+  if (!appState.multimediaModal) {
+    return '';
+  }
+
+  if (appState.multimediaModal === 'info') {
+    return renderModalInfoMultimedia();
+  }
+
+  if (appState.multimediaModal === 'buscar') {
+    return renderModalBuscarMultimedia();
+  }
+
+  return '';
+}
+
+function renderModalInfoMultimedia() {
+  const item = obtenerMultimediaActual();
+
+  return `
+    <div class="media-overlay open">
+      <section class="media-modal">
+        <div class="media-modal-head">
+          <h3>Información del recurso</h3>
+          <button class="media-close" type="button" data-action="multimedia-cerrar">×</button>
+        </div>
+
+        ${renderDetalleMultimedia('Título', item.titulo)}
+        ${renderDetalleMultimedia('Código', item.codigoControl || 'MUL')}
+        ${renderDetalleMultimedia('Tipo', item.tipoMultimedia || 'Multimedia')}
+        ${renderDetalleMultimedia('Categoría', item.categoria || 'General')}
+        ${renderDetalleMultimedia('Descripción', item.descripcion || 'Sin descripción')}
+      </section>
+    </div>
+  `;
+}
+
+function renderModalBuscarMultimedia() {
+  const categorias = obtenerCategoriasMultimedia();
+  const filtrados = filtrarMultimedia();
+
+  return `
+    <div class="media-overlay open">
+      <section class="media-modal">
+        <div class="media-modal-head">
+          <h3>Buscar contenido</h3>
+          <button class="media-close" type="button" data-action="multimedia-cerrar">×</button>
+        </div>
+
+        <div class="media-search-box">
+          <input
+            class="media-input"
+            type="search"
+            placeholder="Buscar por título o descripción"
+            value="${escapeHTML(appState.multimediaBusqueda)}"
+            data-input="multimedia-busqueda"
+          />
+
+          <div class="media-chips">
+            ${categorias.map((cat) => `
+              <button
+                class="media-chip ${cat === appState.multimediaCategoria ? 'active' : ''}"
+                type="button"
+                data-action="multimedia-categoria"
+                data-categoria="${escapeHTML(cat)}"
+              >
+                ${escapeHTML(cat)}
+              </button>
+            `).join('')}
+          </div>
+
+          <select class="media-select" data-input="multimedia-tipo">
+            <option value="" ${!appState.multimediaTipo ? 'selected' : ''}>Todos los tipos</option>
+            <option value="Video" ${appState.multimediaTipo === 'Video' ? 'selected' : ''}>Video</option>
+            <option value="Audio" ${appState.multimediaTipo === 'Audio' ? 'selected' : ''}>Audio</option>
+            <option value="Infografía" ${appState.multimediaTipo === 'Infografía' ? 'selected' : ''}>Infografía</option>
+            <option value="Enlace" ${appState.multimediaTipo === 'Enlace' ? 'selected' : ''}>Enlace</option>
+          </select>
+
+          <div class="media-result-list">
+            ${filtrados.length ? filtrados.map((item) => renderMiniMultimedia(item)).join('') : `
+              <div class="media-empty">No se encontraron recursos con esos criterios.</div>
+            `}
+          </div>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function renderDetalleMultimedia(label, value) {
+  return `
+    <div class="media-detail-row">
+      <p class="media-detail-label">${escapeHTML(label)}</p>
+      <p class="media-detail-value">${escapeHTML(value)}</p>
+    </div>
+  `;
+}
+
+function obtenerMultimediaActual() {
+  return appState.multimedia.find((item) => item.id === appState.multimediaActualId) || appState.multimedia[0] || {};
+}
+
+function obtenerCategoriasMultimedia() {
+  const categorias = appState.multimedia
+    .map((item) => item.categoria)
+    .filter(Boolean);
+
+  return ['Todos', ...Array.from(new Set(categorias))];
+}
+
+function filtrarMultimedia() {
+  const q = normalizarTexto(appState.multimediaBusqueda);
+  const categoria = appState.multimediaCategoria;
+  const tipo = appState.multimediaTipo;
+
+  return appState.multimedia.filter((item) => {
+    const coincideCategoria = categoria === 'Todos' || item.categoria === categoria;
+    const coincideTipo = !tipo || item.tipoMultimedia === tipo;
+
+    const texto = normalizarTexto([
+      item.titulo,
+      item.descripcion,
+      item.codigoControl,
+      item.categoria,
+      item.tipoMultimedia
+    ].filter(Boolean).join(' '));
+
+    const coincideTexto = !q || texto.includes(q);
+
+    return coincideCategoria && coincideTipo && coincideTexto;
+  });
+}
+
+function iconoMultimedia(tipo) {
+  const raw = String(tipo || '').toLowerCase();
+
+  if (raw.includes('video')) return '▶';
+  if (raw.includes('audio')) return '♪';
+  if (raw.includes('info')) return '■';
+
+  return '↗';
+}
+
+function normalizarTexto(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
 }
 
 /* =========================================================
@@ -579,6 +885,62 @@ function bindEventos() {
       renderApp();
     });
   });
+
+    document.querySelectorAll('[data-action^="multimedia"]').forEach((el) => {
+    el.addEventListener('click', function () {
+      const action = el.getAttribute('data-action');
+      const id = el.getAttribute('data-id') || '';
+
+      if (action === 'multimedia-ver') {
+        verMultimedia(id);
+      }
+
+      if (action === 'multimedia-info') {
+        if (id) {
+          appState.multimediaActualId = id;
+        }
+
+        appState.multimediaModal = 'info';
+        renderApp();
+      }
+
+      if (action === 'multimedia-buscar') {
+        appState.multimediaModal = 'buscar';
+        renderApp();
+      }
+
+      if (action === 'multimedia-cerrar') {
+        appState.multimediaModal = '';
+        renderApp();
+      }
+
+      if (action === 'multimedia-seleccionar') {
+        appState.multimediaActualId = id;
+        appState.multimediaModal = '';
+        renderApp();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      if (action === 'multimedia-categoria') {
+        appState.multimediaCategoria = el.getAttribute('data-categoria') || 'Todos';
+        renderApp();
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-input="multimedia-busqueda"]').forEach((el) => {
+    el.addEventListener('input', function () {
+      appState.multimediaBusqueda = el.value || '';
+      renderApp();
+    });
+  });
+
+  document.querySelectorAll('[data-input="multimedia-tipo"]').forEach((el) => {
+    el.addEventListener('change', function () {
+      appState.multimediaTipo = el.value || '';
+      renderApp();
+    });
+  }); 
 }
 
 /* =========================================================
@@ -599,6 +961,7 @@ if (memberId) {
 await cargarUsuarioPwa(memberId);
 await cargarDocumentosPwa(memberId);
 await cargarActividadesPwa(memberId);
+await cargarMultimediaPwa(memberId);
 }
 }
 

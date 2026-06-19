@@ -1,1 +1,11 @@
-
+{
+  "name": "MORENA QRO Capacitación",
+  "short_name": "MORENA QRO",
+  "description": "Aplicación de capacitación MORENA Querétaro.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#7A0B2E",
+  "orientation": "portrait"
+}

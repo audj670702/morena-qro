@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: css/styles.css
-Versión: v1.10.2.2
+Versión: v1.10.3
 Alcance: estilos base de la PWA usuario
 */
 
@@ -428,7 +428,7 @@ body {
 }
 
 .media-recent-banner {
-  background: linear-gradient(90deg, #FFFFFF, #F8EEF3);
+  display: none;
 }
 
 .facebook-recent-banner {
@@ -497,6 +497,163 @@ body {
   font-size: 22px;
   color: rgba(122, 11, 46, 0.72);
   font-weight: 680;
+}
+
+.media-home-carousel {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: stretch;
+  gap: 7px;
+  min-height: 82px;
+  border-radius: 18px;
+  padding: 8px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 84% 18%, rgba(255, 255, 255, 0.16), transparent 28%),
+    linear-gradient(135deg, #7A0B2E 0%, #3B0618 100%);
+  box-shadow: 0 12px 28px rgba(59, 6, 24, 0.16);
+}
+
+.media-home-carousel.loading {
+  grid-template-columns: 1fr;
+  color: #FFFFFF;
+}
+
+.media-home-main {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  background: transparent;
+  color: #FFFFFF;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.media-home-thumb {
+  position: relative;
+  width: 74px;
+  height: 58px;
+  border-radius: 14px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  color: #FFFFFF;
+  font-size: 23px;
+  font-weight: 900;
+}
+
+.media-home-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-home-thumb i {
+  position: absolute;
+  inset: auto auto 6px 6px;
+  width: 21px;
+  height: 21px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.92);
+  color: #7A0B2E;
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.media-home-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.media-home-copy strong {
+  width: fit-content;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #FFFFFF;
+  font-size: 10px;
+  line-height: 1.1;
+  font-weight: 820;
+}
+
+.media-home-copy span {
+  margin-top: 2px;
+  color: #FFFFFF;
+  font-size: 13.4px;
+  line-height: 1.12;
+  font-weight: 850;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.media-home-copy small {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 10.5px;
+  line-height: 1.18;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.media-home-dots {
+  display: flex;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.media-home-dots b {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.media-home-dots b.active {
+  width: 15px;
+  background: #FFFFFF;
+}
+
+.media-home-all {
+  align-self: center;
+  min-width: 54px;
+  min-height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  padding: 6px 8px;
+  font-size: 10.5px;
+  font-weight: 820;
+  cursor: pointer;
+}
+
+.media-home-main:active,
+.media-home-all:active {
+  transform: scale(0.985);
+}
+
+@media (max-width: 360px) {
+  .media-home-carousel {
+    grid-template-columns: 1fr;
+  }
+
+  .media-home-all {
+    justify-self: end;
+    min-height: 28px;
+  }
 }
 
 /* =========================================================

@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: css/styles.css
-Versión: v1.9.1
+Versión: v1.9.2
 Alcance: estilos base de la PWA usuario
 */
 
@@ -846,4 +846,20 @@ body {
   .chat-box {
     padding: 8px;
   }
+}
+
+/* =========================================================
+   BLOQUE BADGE INICIO v1.9.2
+   ========================================================= */
+
+.nav-card {
+  position: relative;
+}
+
+.nav-badge {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  min-width: 24px;
+  text-align: center;
 }

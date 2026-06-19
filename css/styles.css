@@ -763,3 +763,87 @@ body {
   width: 100%;
   margin-top: 12px;
 }
+
+/* =========================================================
+   BLOQUE MENSAJES / CHAT v1.8.4
+   ========================================================= */
+
+.compact-list {
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.message-search {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.chat-box {
+  display: grid;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(122, 11, 46, 0.12);
+  border-radius: 16px;
+  background: #FFF8FB;
+}
+
+.chat-bubble {
+  width: fit-content;
+  max-width: 82%;
+  padding: 8px 10px;
+  border-radius: 15px;
+  border: 1px solid rgba(122, 11, 46, 0.12);
+  background: #FFFFFF;
+}
+
+.chat-bubble.mine {
+  justify-self: end;
+  background: #7A0B2E;
+  color: #FFFFFF;
+  border-color: #7A0B2E;
+  border-bottom-right-radius: 5px;
+}
+
+.chat-bubble.theirs {
+  justify-self: start;
+  background: #FFFFFF;
+  color: #261018;
+  border-bottom-left-radius: 5px;
+}
+
+.chat-bubble p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.chat-bubble span {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.chat-input-row {
+  display: grid;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.chat-input-row textarea {
+  resize: vertical;
+  min-height: 58px;
+}
+
+@media (max-width: 360px) {
+  .chat-bubble {
+    max-width: 88%;
+  }
+
+  .chat-box {
+    padding: 8px;
+  }
+}

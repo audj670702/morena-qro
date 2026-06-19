@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.8.9
+Versión: v1.8.10
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.8.9';
+const APP_VERSION = 'v1.8.10';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -22,11 +22,14 @@ const MOR_API_CONVERSACION_ABRIR = 'https://www.scad.mx/_functions/morConversaci
 const MOR_API_CONVERSACION_MENSAJES = 'https://www.scad.mx/_functions/morConversacionMensajes';
 const MOR_API_MENSAJE_ENVIAR = 'https://www.scad.mx/_functions/morMensajeEnviar';
 const MOR_PANEL_ADM_URL = 'https://www.scad.mx/mor-panel-adm';
+const APP_LOGO_URL = './assets/Logo_Morena_Qro.png';
+const SCAD_LOGO_URL = './assets/icon-192.png';
+const MORENA_FACEBOOK_URL = 'https://www.facebook.com/share/1A7utqCu8i/';
 
 const APP_CONFIG = {
   nombre: 'MORENA QRO',
-  subtitulo: 'Capacitación · Querétaro',
-  versionLabel: 'MORENA QRO Capacitación · v1.8.9'
+  subtitulo: 'Capacitación',
+  versionLabel: APP_VERSION
 };
 
 /* =========================================================
@@ -35,12 +38,19 @@ const APP_CONFIG = {
 
 const appState = {
   vistaActual: 'inicio',
-  usuario: {
+usuario: {
     nombre: 'Usuario MORENA',
+    alias: '',
     codigo: 'USU-0000',
     rol: 'USU',
-    municipio: 'Querétaro'
+    perfilPartido: '',
+    municipio: 'Querétaro',
+    email: '',
+    activo: false,
+    accesoApp: false,
+    avatarUrl: ''
   },
+   
 documentos: [],
 documentosCargando: false,
 documentosError: '',
@@ -151,7 +161,12 @@ async function cargarUsuarioPwa(memberId) {
     appState.usuario.codigo = usuario.codigoControl || 'USU';
     appState.usuario.rol = usuario.rolesApp || 'USU';
     appState.usuario.municipio = usuario.municipio || 'Querétaro';
-    appState.usuario.avatarUrl = usuario.avatarUrl || '';
+      appState.usuario.alias = usuario.alias || usuario.nombreCorto || '';
+    appState.usuario.perfilPartido = usuario.perfilPartido || usuario.perfil || usuario.rolPartido || usuario.rolesApp || '';
+    appState.usuario.email = usuario.email || usuario.loginEmail || usuario.correo || '';
+    appState.usuario.activo = usuario.activo === true || String(usuario.activo).toLowerCase() === 'true';
+    appState.usuario.accesoApp = usuario.accesoApp === true || usuario.accesoActivo === true || String(usuario.accesoApp || usuario.accesoActivo).toLowerCase() === 'true';
+    appState.usuario.avatarUrl = usuario.avatarUrl || usuario.fotoPerfil || '';
 
     renderApp();
 
@@ -620,9 +635,7 @@ function renderApp() {
       <section class="app-body">
         ${renderVista()}
       </section>
-      <footer class="app-version">
-        ${escapeHTML(APP_CONFIG.versionLabel)}
-      </footer>
+      ${renderPoweredFooter()}
     </main>
   `;
 
@@ -630,11 +643,32 @@ function renderApp() {
 }
 
 function renderHeader() {
+  const haySesion = Boolean(appState.usuario.memberId);
+
   return `
     <header class="app-header">
-      <div class="app-logo">M</div>
-      <h1 class="app-title">${escapeHTML(APP_CONFIG.nombre)}</h1>
-      <p class="app-subtitle">${escapeHTML(APP_CONFIG.subtitulo)}</p>
+      <button
+        class="topbar-session"
+        type="button"
+        ${haySesion ? 'data-action="logout-lite"' : 'disabled'}
+        aria-label="${haySesion ? 'Cerrar sesión' : 'Iniciar sesión no disponible'}"
+      >
+        ${haySesion ? '⎋' : '↪'}
+      </button>
+
+      <img class="app-logo-img" src="${escapeHTML(APP_LOGO_URL)}" alt="MORENA QRO" />
+
+      <div class="topbar-titlebox">
+        <h1 class="app-title">${escapeHTML(APP_CONFIG.nombre)}</h1>
+        <p class="app-subtitle">${escapeHTML(APP_CONFIG.subtitulo)}</p>
+      </div>
+
+      <div class="topbar-actions">
+        <span class="install-pill">App</span>
+        <button class="topbar-icon" type="button" data-action="refresh" aria-label="Actualizar">
+          ↻
+        </button>
+      </div>
     </header>
   `;
 }
@@ -667,35 +701,155 @@ function renderVista() {
 
 function renderInicio() {
   return `
-    <section>
-      <h2 class="section-title">Inicio</h2>
-      <p class="section-note">
-        Consulta tus materiales, actividades, avisos y datos de perfil.
-      </p>
+    <section class="home-screen">
+      ${renderIdentityCard()}
+      ${renderInicioBannerMultimedia()}
+      ${renderInicioBannerFacebook()}
 
-      <article class="info-card">
-        <h3 class="info-title">${escapeHTML(appState.usuario.nombre)}</h3>
-        <p class="info-meta">
-          ${escapeHTML(appState.usuario.codigo)} · ${escapeHTML(appState.usuario.rol)} · ${escapeHTML(appState.usuario.municipio)}
-        </p>
-      </article>
-
-      <div class="nav-grid">
-        ${renderNavCard('D', 'Documentos', 'Materiales disponibles', 'documentos')}
-        ${renderNavCard('A', 'Actividades', 'Agenda y capacitación', 'actividades')}
-        ${renderNavCard('M', 'Multimedia', 'Videos y recursos', 'multimedia')}
-        ${renderMensajesNavCard()}
-        ${renderNavCard('P', 'Perfil', 'Datos personales', 'perfil')}
-         ${usuarioEsADM() ? `
-  <button class="nav-card" type="button" data-action="abrir-panel-adm">
-    <div class="nav-icon">ADM</div>
-    <p class="nav-title">Panel ADM</p>
-    <p class="nav-desc">Gestión administrativa</p>
-  </button>
-` : ''}
+      <div class="nav-grid nav-list">
+        ${renderModuloRow('▣', 'Mi capacitación', 'perfil', 0)}
+        ${renderModuloRow('◷', 'Actividades', 'actividades', appState.actividades.length)}
+        ${renderModuloRow('▤', 'Documentos', 'documentos', appState.documentos.length)}
+        ${renderModuloRow('✉', 'Mensajes', 'mensajes', appState.mensajesPendientesTotal)}
+        ${renderModuloRow('▶', 'Multimedia', 'multimedia', appState.multimedia.length)}
+        ${renderModuloRow('◎', 'Grupos', 'perfil', 0)}
+        ${usuarioEsADM() ? renderModuloADM() : ''}
       </div>
     </section>
   `;
+}
+
+function renderIdentityCard() {
+  const usuario = appState.usuario;
+  const alias = usuario.alias || 'Sin alias';
+  const perfilPartido = usuario.perfilPartido || usuario.rol || 'Usuario';
+  const codigoValidacion = generarCodigoValidacionUsuario();
+
+  return `
+    <article class="identity-card">
+      <button class="identity-avatar" type="button" data-view="perfil" aria-label="Actualizar perfil">
+        ${usuario.avatarUrl ? `
+          <img src="${escapeHTML(usuario.avatarUrl)}" alt="${escapeHTML(usuario.nombre)}" />
+        ` : `
+          <span>${escapeHTML(obtenerInicialesUsuario(usuario.nombre))}</span>
+        `}
+        <small>✎</small>
+      </button>
+
+      <div class="identity-main">
+        <h2>${escapeHTML(usuario.nombre)}</h2>
+        <p><strong>Alias:</strong> ${escapeHTML(alias)}</p>
+        <p><strong>PerfilPartido:</strong> ${escapeHTML(perfilPartido)}</p>
+      </div>
+
+      <div class="identity-tech">
+        <span>${escapeHTML(codigoValidacion)}</span>
+        <small>${escapeHTML(APP_VERSION)}</small>
+      </div>
+    </article>
+  `;
+}
+
+function renderInicioBannerMultimedia() {
+  const item = obtenerMultimediaActual();
+  const titulo = item.titulo || 'Multimedia reciente';
+  const detalle = item.descripcion || 'Contenido reciente de capacitación.';
+
+  return `
+    <button class="home-banner media-recent-banner" type="button" data-action="multimedia-reciente">
+      <div class="banner-thumb">
+        ${item.urlVistaPrevia ? `
+          <img src="${escapeHTML(item.urlVistaPrevia)}" alt="${escapeHTML(titulo)}" />
+        ` : `
+          <span>▶</span>
+        `}
+      </div>
+
+      <div class="banner-copy">
+        <strong>Multimedia reciente</strong>
+        <span>${escapeHTML(titulo)}</span>
+        <small>${escapeHTML(detalle)}</small>
+      </div>
+
+      <div class="banner-access">›</div>
+    </button>
+  `;
+}
+
+function renderInicioBannerFacebook() {
+  return `
+    <button class="home-banner facebook-recent-banner" type="button" data-action="facebook-abrir">
+      <div class="banner-thumb fb-thumb">
+        <span>f</span>
+      </div>
+
+      <div class="banner-copy">
+        <strong>Facebook reciente</strong>
+        <span>Contenido reciente de MORENA QRO</span>
+        <small>Abrir publicación o página oficial.</small>
+      </div>
+
+      <div class="banner-access">›</div>
+    </button>
+  `;
+}
+
+function renderModuloRow(icono, titulo, vista, contador) {
+  const total = Number(contador || 0);
+
+  return `
+    <button class="nav-card nav-row" type="button" data-view="${escapeHTML(vista)}">
+      <div class="nav-icon">${escapeHTML(icono)}</div>
+      <p class="nav-title">${escapeHTML(titulo)}</p>
+      ${total > 0 ? `<span class="badge warn nav-badge">${total}</span>` : ''}
+      <span class="nav-chevron">›</span>
+    </button>
+  `;
+}
+
+function renderModuloADM() {
+  return `
+    <button class="nav-card nav-row adm-row" type="button" data-action="abrir-panel-adm">
+      <div class="nav-icon">ADM</div>
+      <p class="nav-title">Panel ADM</p>
+      <span class="nav-chevron">›</span>
+    </button>
+  `;
+}
+
+function renderPoweredFooter() {
+  return `
+    <footer class="powered-footer">
+      <span>Powered by</span>
+      <img src="${escapeHTML(SCAD_LOGO_URL)}" alt="SCaD" />
+    </footer>
+  `;
+}
+
+function generarCodigoValidacionUsuario() {
+  const usuario = appState.usuario;
+
+  const em = usuario.email ? 1 : 0;
+  const mid = usuario.memberId ? 1 : 0;
+  const a = usuario.activo ? 1 : 0;
+  const pp = usuario.perfilPartido || usuario.rol ? 1 : 0;
+  const aca = usuario.accesoApp ? 1 : 0;
+
+  return `Em${em}MiD${mid}A${a}Pp${pp}AcA${aca}`;
+}
+
+function obtenerInicialesUsuario(nombre) {
+  const partes = String(nombre || 'Usuario MORENA')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  const iniciales = partes
+    .slice(0, 2)
+    .map((parte) => parte.charAt(0).toUpperCase())
+    .join('');
+
+  return iniciales || 'M';
 }
 
 /* =========================================================
@@ -1553,6 +1707,24 @@ document.querySelectorAll('[data-action="refresh"]').forEach((el) => {
       abrirPanelADM();
     });
   });
+
+     document.querySelectorAll('[data-action="facebook-abrir"]').forEach((el) => {
+    el.addEventListener('click', function () {
+      window.open(MORENA_FACEBOOK_URL, '_blank', 'noopener');
+    });
+  });
+
+  document.querySelectorAll('[data-action="multimedia-reciente"]').forEach((el) => {
+    el.addEventListener('click', function () {
+      abrirMultimediaReciente();
+    });
+  });
+
+  document.querySelectorAll('[data-action="logout-lite"]').forEach((el) => {
+    el.addEventListener('click', function () {
+      cerrarSesionLocal();
+    });
+  });
 }
 
 function verMultimedia(id) {
@@ -1572,6 +1744,23 @@ function verMultimedia(id) {
 
   appState.multimediaModal = 'ver';
   renderApp();
+}
+
+function abrirMultimediaReciente() {
+  const item = obtenerMultimediaActual();
+
+  appState.vistaActual = 'multimedia';
+
+  if (item && item.id) {
+    appState.multimediaActualId = item.id;
+    appState.multimediaModal = item.urlEmbed ? 'ver' : 'info';
+  }
+
+  renderApp();
+}
+
+function cerrarSesionLocal() {
+  window.location.href = window.location.origin + window.location.pathname;
 }
 
 /* =========================================================

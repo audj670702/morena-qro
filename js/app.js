@@ -9,16 +9,23 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.8.2';
+const APP_VERSION = 'v1.8.3';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
+const MOR_API_AVISOS = 'https://www.scad.mx/_functions/morAvisosSistema';
+const MOR_API_PENDIENTES = 'https://www.scad.mx/_functions/morMensajesPendientes';
+const MOR_API_CONVERSACIONES = 'https://www.scad.mx/_functions/morConversaciones';
+const MOR_API_CONTACTOS_BUSCAR = 'https://www.scad.mx/_functions/morContactosBuscar';
+const MOR_API_CONVERSACION_ABRIR = 'https://www.scad.mx/_functions/morConversacionAbrir';
+const MOR_API_CONVERSACION_MENSAJES = 'https://www.scad.mx/_functions/morConversacionMensajes';
+const MOR_API_MENSAJE_ENVIAR = 'https://www.scad.mx/_functions/morMensajeEnviar';
 
 const APP_CONFIG = {
   nombre: 'MORENA QRO',
   subtitulo: 'Capacitación · Querétaro',
-  versionLabel: 'MORENA QRO Capacitación · v1.8.2'
+  versionLabel: 'MORENA QRO Capacitación · v1.8.3'
 };
 
 /* =========================================================
@@ -46,7 +53,26 @@ multimediaActualId: '',
 multimediaModal: '',
 multimediaBusqueda: '',
 multimediaCategoria: 'Todos',
-multimediaTipo: ''
+multimediaTipo: '',
+avisos: [],
+avisosCanal: null,
+avisosCargando: false,
+avisosError: '',
+mensajesPendientesTotal: 0,
+mensajesPendientes: [],
+conversaciones: [],
+conversacionesCargando: false,
+conversacionesError: '',
+contactosBusqueda: '',
+contactosResultados: [],
+contactosCargando: false,
+contactosError: '',
+chatConversacion: null,
+chatContacto: null,
+chatMensajes: [],
+chatCargando: false,
+chatError: '',
+chatTexto: ''
 };
 
 /* =========================================================
@@ -238,6 +264,248 @@ async function cargarMultimediaPwa(memberId) {
     appState.multimedia = [];
     appState.multimediaError = 'Error de conexión.';
     appState.multimediaCargando = false;
+    renderApp();
+  }
+}
+
+async function cargarMensajesPwa(memberId) {
+  await Promise.all([
+    cargarAvisosPwa(memberId),
+    cargarPendientesMensajesPwa(memberId),
+    cargarConversacionesPwa(memberId)
+  ]);
+}
+
+async function cargarAvisosPwa(memberId) {
+  try {
+    appState.avisosCargando = true;
+    appState.avisosError = '';
+    renderApp();
+
+    const url = `${MOR_API_AVISOS}?memberId=${encodeURIComponent(memberId)}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!data.ok) {
+      appState.avisos = [];
+      appState.avisosCanal = null;
+      appState.avisosError = data.codigo || 'No fue posible cargar avisos.';
+      appState.avisosCargando = false;
+      renderApp();
+      return;
+    }
+
+    appState.avisos = Array.isArray(data.avisos) ? data.avisos : [];
+    appState.avisosCanal = data.canal || null;
+    appState.avisosCargando = false;
+    renderApp();
+
+  } catch (error) {
+    console.error('Error al cargar avisos:', error);
+    appState.avisos = [];
+    appState.avisosError = 'Error de conexión.';
+    appState.avisosCargando = false;
+    renderApp();
+  }
+}
+
+async function cargarPendientesMensajesPwa(memberId) {
+  try {
+    const url = `${MOR_API_PENDIENTES}?memberId=${encodeURIComponent(memberId)}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!data.ok) {
+      appState.mensajesPendientesTotal = 0;
+      appState.mensajesPendientes = [];
+      renderApp();
+      return;
+    }
+
+    appState.mensajesPendientesTotal = Number(data.total || 0);
+    appState.mensajesPendientes = Array.isArray(data.pendientes) ? data.pendientes : [];
+    renderApp();
+
+  } catch (error) {
+    console.error('Error al cargar pendientes:', error);
+    appState.mensajesPendientesTotal = 0;
+    appState.mensajesPendientes = [];
+    renderApp();
+  }
+}
+
+async function cargarConversacionesPwa(memberId) {
+  try {
+    appState.conversacionesCargando = true;
+    appState.conversacionesError = '';
+    renderApp();
+
+    const url = `${MOR_API_CONVERSACIONES}?memberId=${encodeURIComponent(memberId)}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!data.ok) {
+      appState.conversaciones = [];
+      appState.conversacionesError = data.codigo || 'No fue posible cargar conversaciones.';
+      appState.conversacionesCargando = false;
+      renderApp();
+      return;
+    }
+
+    appState.conversaciones = Array.isArray(data.conversaciones) ? data.conversaciones : [];
+    appState.conversacionesCargando = false;
+    renderApp();
+
+  } catch (error) {
+    console.error('Error al cargar conversaciones:', error);
+    appState.conversaciones = [];
+    appState.conversacionesError = 'Error de conexión.';
+    appState.conversacionesCargando = false;
+    renderApp();
+  }
+}
+
+async function buscarContactosPwa() {
+  const memberId = appState.usuario.memberId || '';
+  const q = appState.contactosBusqueda.trim();
+
+  if (!memberId || !q) {
+    appState.contactosResultados = [];
+    appState.contactosError = '';
+    renderApp();
+    return;
+  }
+
+  try {
+    appState.contactosCargando = true;
+    appState.contactosError = '';
+    renderApp();
+
+    const url = `${MOR_API_CONTACTOS_BUSCAR}?memberId=${encodeURIComponent(memberId)}&q=${encodeURIComponent(q)}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    appState.contactosResultados = data.ok && Array.isArray(data.contactos) ? data.contactos : [];
+    appState.contactosError = data.ok ? '' : (data.codigo || 'No fue posible buscar contactos.');
+    appState.contactosCargando = false;
+    renderApp();
+
+  } catch (error) {
+    console.error('Error al buscar contactos:', error);
+    appState.contactosResultados = [];
+    appState.contactosError = 'Error de conexión.';
+    appState.contactosCargando = false;
+    renderApp();
+  }
+}
+
+async function abrirChatContacto(contactoMemberId) {
+  const memberId = appState.usuario.memberId || '';
+
+  if (!memberId || !contactoMemberId) return;
+
+  try {
+    appState.chatCargando = true;
+    appState.chatError = '';
+    renderApp();
+
+    const response = await fetch(MOR_API_CONVERSACION_ABRIR, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memberId, contactoMemberId })
+    });
+
+    const data = await response.json();
+
+    if (!data.ok || !data.conversacion) {
+      appState.chatError = data.mensaje || 'No fue posible abrir la conversación.';
+      appState.chatCargando = false;
+      renderApp();
+      return;
+    }
+
+    appState.chatConversacion = data.conversacion;
+    appState.chatContacto = data.conversacion.contacto || null;
+    await cargarChatMensajes(data.conversacion.id);
+
+  } catch (error) {
+    console.error('Error al abrir chat:', error);
+    appState.chatError = 'Error de conexión.';
+    appState.chatCargando = false;
+    renderApp();
+  }
+}
+
+async function abrirChatConversacion(conversacionId) {
+  const conv = appState.conversaciones.find((item) => item.id === conversacionId);
+
+  if (!conv) return;
+
+  appState.chatConversacion = conv;
+  appState.chatContacto = conv.contacto || null;
+  await cargarChatMensajes(conversacionId);
+}
+
+async function cargarChatMensajes(conversacionId) {
+  const memberId = appState.usuario.memberId || '';
+
+  if (!memberId || !conversacionId) return;
+
+  try {
+    appState.chatCargando = true;
+    appState.chatError = '';
+    renderApp();
+
+    const url = `${MOR_API_CONVERSACION_MENSAJES}?memberId=${encodeURIComponent(memberId)}&conversacionId=${encodeURIComponent(conversacionId)}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    appState.chatMensajes = data.ok && Array.isArray(data.mensajes) ? data.mensajes : [];
+    appState.chatError = data.ok ? '' : (data.mensaje || 'No fue posible cargar mensajes.');
+    appState.chatCargando = false;
+
+    await cargarPendientesMensajesPwa(memberId);
+    renderApp();
+
+  } catch (error) {
+    console.error('Error al cargar chat:', error);
+    appState.chatMensajes = [];
+    appState.chatError = 'Error de conexión.';
+    appState.chatCargando = false;
+    renderApp();
+  }
+}
+
+async function enviarMensajeChat() {
+  const memberId = appState.usuario.memberId || '';
+  const contactoMemberId = appState.chatContacto?.memberId || '';
+  const conversacionId = appState.chatConversacion?.id || '';
+  const mensaje = appState.chatTexto.trim();
+
+  if (!memberId || !contactoMemberId || !mensaje) return;
+
+  try {
+    const response = await fetch(MOR_API_MENSAJE_ENVIAR, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memberId, contactoMemberId, conversacionId, mensaje })
+    });
+
+    const data = await response.json();
+
+    if (!data.ok) {
+      appState.chatError = data.mensaje || 'No fue posible enviar el mensaje.';
+      renderApp();
+      return;
+    }
+
+    appState.chatTexto = '';
+    await cargarChatMensajes(conversacionId);
+    await cargarConversacionesPwa(memberId);
+
+  } catch (error) {
+    console.error('Error al enviar mensaje:', error);
+    appState.chatError = 'Error de conexión.';
     renderApp();
   }
 }
@@ -865,23 +1133,215 @@ function renderMensajes() {
   return `
     <section>
       <h2 class="section-title">Mensajes</h2>
-      <p class="section-note">Avisos institucionales y mensajes recibidos.</p>
+      <p class="section-note">Avisos institucionales y conversaciones.</p>
 
-      <div class="list">
-        ${datosDemo.mensajes.map((item) => `
-          <article class="info-card">
-            <h3 class="info-title">${escapeHTML(item.titulo)}</h3>
-            <p class="info-meta">${escapeHTML(item.codigo)} · ${escapeHTML(item.estado)}</p>
-            <div class="badge-row">
-              <span class="badge warn">Aviso</span>
-            </div>
-            <p class="info-meta">${escapeHTML(item.texto)}</p>
-          </article>
-        `).join('')}
-      </div>
+      ${renderMensajesResumen()}
+      ${renderBuscarContactos()}
+      ${renderConversaciones()}
+      ${renderChat()}
 
       ${renderBackButton()}
     </section>
+  `;
+}
+
+function renderMensajesResumen() {
+  const pendientes = Number(appState.mensajesPendientesTotal || 0);
+
+  return `
+    <article class="info-card">
+      <h3 class="info-title">Avisos de Capacitación</h3>
+      <p class="info-meta">
+        ${appState.avisosCanal ? escapeHTML(appState.avisosCanal.descripcion || 'Canal institucional fijo.') : 'Canal institucional.'}
+      </p>
+
+      <div class="badge-row">
+        <span class="badge ${pendientes ? 'warn' : 'ok'}">
+          Pendientes: ${pendientes || '-'}
+        </span>
+        <span class="badge">
+          Avisos: ${appState.avisos.length || '-'}
+        </span>
+      </div>
+
+      ${renderAvisosLista()}
+    </article>
+  `;
+}
+
+function renderAvisosLista() {
+  if (appState.avisosCargando) {
+    return `<p class="info-meta">Cargando avisos...</p>`;
+  }
+
+  if (appState.avisosError) {
+    return `<p class="info-meta">${escapeHTML(appState.avisosError)}</p>`;
+  }
+
+  if (!appState.avisos.length) {
+    return `<p class="info-meta">No hay avisos vigentes.</p>`;
+  }
+
+  return `
+    <div class="list compact-list">
+      ${appState.avisos.slice(0, 3).map((aviso) => `
+        <article class="list-row">
+          <div>
+            <p class="list-title">${escapeHTML(aviso.asunto || 'Aviso')}</p>
+            <p class="list-meta">${escapeHTML(aviso.codigoControl || 'MSG')} · ${aviso.leido ? 'Leído' : 'Pendiente'}</p>
+            <p class="list-meta">${escapeHTML(aviso.mensaje || '')}</p>
+          </div>
+          <span class="badge ${aviso.leido ? 'ok' : 'warn'}">${aviso.leido ? 'Leído' : 'Nuevo'}</span>
+        </article>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderBuscarContactos() {
+  return `
+    <article class="info-card">
+      <h3 class="info-title">Buscar contacto</h3>
+      <p class="info-meta">Nombre, alias, código o municipio.</p>
+
+      <div class="message-search">
+        <input
+          class="media-input"
+          type="search"
+          placeholder="Buscar contacto"
+          value="${escapeHTML(appState.contactosBusqueda)}"
+          data-input="contactos-busqueda"
+        />
+        <button class="btn btn-secondary" type="button" data-action="contactos-buscar">
+          Buscar
+        </button>
+      </div>
+
+      ${renderContactosResultados()}
+    </article>
+  `;
+}
+
+function renderContactosResultados() {
+  if (appState.contactosCargando) {
+    return `<p class="info-meta">Buscando...</p>`;
+  }
+
+  if (appState.contactosError) {
+    return `<p class="info-meta">${escapeHTML(appState.contactosError)}</p>`;
+  }
+
+  if (!appState.contactosResultados.length) {
+    return '';
+  }
+
+  return `
+    <div class="list compact-list">
+      ${appState.contactosResultados.map((contacto) => `
+        <article class="list-row">
+          <div>
+            <p class="list-title">${escapeHTML(contacto.nombreCompleto || 'Contacto')}</p>
+            <p class="list-meta">
+              ${escapeHTML(contacto.codigoControl || 'USU')} · ${escapeHTML(contacto.municipio || '')}
+            </p>
+          </div>
+          <button class="badge ok" type="button" data-action="chat-contacto" data-member-id="${escapeHTML(contacto.memberId)}">
+            Mensaje
+          </button>
+        </article>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderConversaciones() {
+  if (appState.conversacionesCargando) {
+    return `
+      <article class="info-card">
+        <h3 class="info-title">Conversaciones</h3>
+        <p class="info-meta">Cargando conversaciones...</p>
+      </article>
+    `;
+  }
+
+  if (appState.conversacionesError) {
+    return `
+      <article class="info-card">
+        <h3 class="info-title">Conversaciones</h3>
+        <p class="info-meta">${escapeHTML(appState.conversacionesError)}</p>
+      </article>
+    `;
+  }
+
+  return `
+    <article class="info-card">
+      <h3 class="info-title">Conversaciones recientes</h3>
+
+      ${appState.conversaciones.length ? `
+        <div class="list compact-list">
+          ${appState.conversaciones.map((conv) => `
+            <article class="list-row">
+              <div>
+                <p class="list-title">
+                  ${escapeHTML(conv.contacto?.nombreCompleto || conv.nombreCanal || 'Conversación')}
+                </p>
+                <p class="list-meta">${escapeHTML(conv.ultimoMensaje || 'Sin mensajes recientes')}</p>
+              </div>
+              <button class="badge ${conv.pendientes ? 'warn' : 'ok'}" type="button" data-action="chat-conversacion" data-id="${escapeHTML(conv.id)}">
+                ${conv.pendientes ? conv.pendientes : 'Abrir'}
+              </button>
+            </article>
+          `).join('')}
+        </div>
+      ` : `
+        <p class="info-meta">Sin conversaciones recientes.</p>
+      `}
+    </article>
+  `;
+}
+
+function renderChat() {
+  if (!appState.chatConversacion) {
+    return '';
+  }
+
+  const nombre = appState.chatContacto?.nombreCompleto || appState.chatConversacion.nombreCanal || 'Conversación';
+
+  return `
+    <article class="info-card">
+      <h3 class="info-title">${escapeHTML(nombre)}</h3>
+      <p class="info-meta">${escapeHTML(appState.chatContacto?.municipio || 'Chat')}</p>
+
+      ${appState.chatError ? `<p class="info-meta">${escapeHTML(appState.chatError)}</p>` : ''}
+
+      <div class="chat-box">
+        ${appState.chatCargando ? `
+          <p class="info-meta">Cargando mensajes...</p>
+        ` : appState.chatMensajes.length ? appState.chatMensajes.map((msg) => `
+          <div class="chat-bubble ${msg.mio ? 'mine' : 'theirs'}">
+            <p>${escapeHTML(msg.mensaje)}</p>
+            <span>${escapeHTML(msg.enviadoPorNombre || msg.remitenteNombre || '')}</span>
+          </div>
+        `).join('') : `
+          <p class="info-meta">Sin mensajes todavía.</p>
+        `}
+      </div>
+
+      ${appState.chatConversacion.soloLectura ? '' : `
+        <div class="chat-input-row">
+          <textarea
+            class="media-input"
+            rows="2"
+            placeholder="Escribir mensaje"
+            data-input="chat-texto"
+          >${escapeHTML(appState.chatTexto)}</textarea>
+
+          <button class="btn btn-primary" type="button" data-action="chat-enviar">
+            Enviar
+          </button>
+        </div>
+      `}
+    </article>
   `;
 }
 
@@ -982,7 +1442,45 @@ function bindEventos() {
       appState.multimediaTipo = el.value || '';
       renderApp();
     });
-  }); 
+
+
+       });
+
+  document.querySelectorAll('[data-input="contactos-busqueda"]').forEach((el) => {
+    el.addEventListener('input', function () {
+      appState.contactosBusqueda = el.value || '';
+    });
+  });
+
+  document.querySelectorAll('[data-action="contactos-buscar"]').forEach((el) => {
+    el.addEventListener('click', function () {
+      buscarContactosPwa();
+    });
+  });
+
+  document.querySelectorAll('[data-action="chat-contacto"]').forEach((el) => {
+    el.addEventListener('click', function () {
+      abrirChatContacto(el.getAttribute('data-member-id') || '');
+    });
+  });
+
+  document.querySelectorAll('[data-action="chat-conversacion"]').forEach((el) => {
+    el.addEventListener('click', function () {
+      abrirChatConversacion(el.getAttribute('data-id') || '');
+    });
+  });
+
+  document.querySelectorAll('[data-input="chat-texto"]').forEach((el) => {
+    el.addEventListener('input', function () {
+      appState.chatTexto = el.value || '';
+    });
+  });
+
+  document.querySelectorAll('[data-action="chat-enviar"]').forEach((el) => {
+    el.addEventListener('click', function () {
+      enviarMensajeChat();
+    });
+  });
 }
 
 function verMultimedia(id) {
@@ -1023,6 +1521,7 @@ await cargarUsuarioPwa(memberId);
 await cargarDocumentosPwa(memberId);
 await cargarActividadesPwa(memberId);
 await cargarMultimediaPwa(memberId);
+await cargarMensajesPwa(memberId);
 }
 }
 

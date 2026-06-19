@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.8.7
+Versión: v1.8.8
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.8.7';
+const APP_VERSION = 'v1.8.8';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -26,7 +26,7 @@ const MOR_PANEL_ADM_URL = 'https://www.scad.mx/mor-panel-adm';
 const APP_CONFIG = {
   nombre: 'MORENA QRO',
   subtitulo: 'Capacitación · Querétaro',
-  versionLabel: 'MORENA QRO Capacitación · v1.8.7'
+  versionLabel: 'MORENA QRO Capacitación · v1.8.8'
 };
 
 /* =========================================================
@@ -1189,7 +1189,7 @@ function renderMensajes() {
 }
 
 function renderMensajesResumen() {
-  const pendientes = Number(appState.mensajesPendientesTotal || 0);
+  const pendientes = appState.avisos.filter((aviso) => aviso.leido !== true).length;
 
   return `
     <article class="info-card">

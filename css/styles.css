@@ -317,9 +317,9 @@ body {
   align-items: center;
   gap: 8px;
   min-height: 58px;
-  border: 1px solid var(--morena-border);
-  background: #FFFFFF;
-  border-radius: 16px;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
   padding: 8px;
 }
 
@@ -368,9 +368,9 @@ body {
 
 .identity-main h2 {
   margin: 0;
-  font-size: 13.7px;
+  font-size: 12px;
   line-height: 1.12;
-  font-weight: 850;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

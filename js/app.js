@@ -721,7 +721,6 @@ function renderInicio() {
 
 function renderIdentityCard() {
   const usuario = appState.usuario;
-  const alias = usuario.alias || 'Sin alias';
   const perfilPartido = usuario.perfilPartido || usuario.rol || 'Usuario';
   const codigoValidacion = generarCodigoValidacionUsuario();
 
@@ -738,13 +737,12 @@ function renderIdentityCard() {
 
       <div class="identity-main">
         <h2>${escapeHTML(usuario.nombre)}</h2>
-        <p><strong>Alias:</strong> ${escapeHTML(alias)}</p>
-        <p><strong>PerfilPartido:</strong> ${escapeHTML(perfilPartido)}</p>
+        <p class="identity-perfil">${escapeHTML(perfilPartido)}</p>
       </div>
 
       <div class="identity-tech">
-        <span>${escapeHTML(codigoValidacion)}</span>
-        <small>${escapeHTML(APP_VERSION)}</small>
+        <span class="identity-code">${escapeHTML(codigoValidacion)}</span>
+        <small class="identity-version">${escapeHTML(APP_VERSION)}</small>
       </div>
     </article>
   `;

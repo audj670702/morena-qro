@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: css/styles.css
-Versión: v1.10
+Versión: v1.10.2.2
 Alcance: estilos base de la PWA usuario
 */
 
@@ -401,16 +401,16 @@ body {
 }
 
 .identity-tech span {
-  font-size: 9.7px;
-  color: var(--text-muted);
-  font-weight: 760;
+  font-size: 8.6px;
+  color: rgba(117, 97, 106, 0.48);
+  font-weight: 400;
   white-space: nowrap;
 }
 
 .identity-tech small {
-  font-size: 10.2px;
-  color: var(--morena-primary);
-  font-weight: 850;
+  font-size: 8.8px;
+  color: rgba(117, 97, 106, 0.48);
+  font-weight: 400;
 }
 
 .home-banner {

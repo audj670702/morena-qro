@@ -1,1 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <title>MORENA QRO Capacitación</title>
+
+  <meta name="theme-color" content="#7A0B2E" />
+  <meta name="description" content="Aplicación de capacitación MORENA Querétaro." />
+
+  <link rel="manifest" href="./manifest.webmanifest" />
+
+  <style>
+    :root {
+      --morena-primary: #7A0B2E;
+      --morena-dark: #3B0618;
+      --morena-soft: #F8EEF3;
+      --morena-border: rgba(122, 11, 46, 0.18);
+      --text-main: #261018;
+      --text-muted: #75616A;
+      --white: #FFFFFF;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(122, 11, 46, 0.14), transparent 34%),
+        linear-gradient(180deg, #FFFFFF 0%, #F9F2F5 100%);
+      color: var(--text-main);
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 18px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 520px;
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid var(--morena-border);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 18px 48px rgba(59, 6, 24, 0.14);
+    }
+
+    .header {
+      padding: 24px 18px 20px;
+      text-align: center;
+      color: var(--white);
+      background: linear-gradient(135deg, rgba(122, 11, 46, 0.98), rgba(59, 6, 24, 0.96));
+    }
+
+    .logo {
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 10px;
+      border-radius: 19px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.26);
+      font-weight: 850;
+      font-size: 22px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      font-size: 13px;
+      opacity: 0.92;
+    }
+
+    .body {
+      padding: 18px;
+      text-align: center;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: var(--morena-soft);
+      color: var(--morena-primary);
+      border: 1px solid var(--morena-border);
+      font-size: 12px;
+      font-weight: 760;
+      margin-bottom: 14px;
+    }
+
+    .message {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--text-muted);
+    }
+
+    .version {
+      padding: 0 18px 16px;
+      text-align: center;
+      font-size: 11px;
+      color: rgba(117, 97, 106, 0.78);
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="logo">M</div>
+      <h1>MORENA QRO</h1>
+      <p class="subtitle">Capacitación · Querétaro</p>
+    </header>
+
+    <section class="body">
+      <div class="status">App en preparación</div>
+      <p class="message">
+        Plataforma de capacitación en proceso de integración.
+      </p>
+    </section>
+
+    <footer class="version">
+      MORENA QRO Capacitación · v1
+    </footer>
+  </main>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js');
+      });
+    }
+  </script>
+</body>
+</html>

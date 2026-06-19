@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1
+Versión: v1.1
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -14,7 +14,7 @@ const APP_VERSION = 'v1';
 const APP_CONFIG = {
   nombre: 'MORENA QRO',
   subtitulo: 'Capacitación · Querétaro',
-  versionLabel: 'MORENA QRO Capacitación · v1'
+  versionLabel: 'MORENA QRO Capacitación · v1.1'
 };
 
 /* =========================================================
@@ -79,6 +79,11 @@ const datosDemo = {
 
 function $(selector) {
   return document.querySelector(selector);
+}
+
+function obtenerParametroURL(nombre) {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(nombre) || '';
 }
 
 function escapeHTML(value) {
@@ -367,6 +372,17 @@ function bindEventos() {
    BLOQUE 14. INICIALIZACIÓN
    ========================================================= */
 
-document.addEventListener('DOMContentLoaded', function () {
+function inicializarApp() {
+  const memberId = obtenerParametroURL('memberId');
+
+  if (memberId) {
+    appState.usuario.memberId = memberId;
+    appState.usuario.codigo = 'Sesión recibida';
+  }
+
   renderApp();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  inicializarApp();
 });

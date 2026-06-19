@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.8.5
+Versión: v1.8.6
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.8.5';
+const APP_VERSION = 'v1.8.6';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -21,11 +21,12 @@ const MOR_API_CONTACTOS_BUSCAR = 'https://www.scad.mx/_functions/morContactosBus
 const MOR_API_CONVERSACION_ABRIR = 'https://www.scad.mx/_functions/morConversacionAbrir';
 const MOR_API_CONVERSACION_MENSAJES = 'https://www.scad.mx/_functions/morConversacionMensajes';
 const MOR_API_MENSAJE_ENVIAR = 'https://www.scad.mx/_functions/morMensajeEnviar';
+const MOR_PANEL_ADM_URL = 'https://www.scad.mx/mor-panel-adm';
 
 const APP_CONFIG = {
   nombre: 'MORENA QRO',
   subtitulo: 'Capacitación · Querétaro',
-  versionLabel: 'MORENA QRO Capacitación · v1.8.5'
+  versionLabel: 'MORENA QRO Capacitación · v1.8.6'
 };
 
 /* =========================================================
@@ -524,6 +525,21 @@ function setVista(vista) {
   renderApp();
 }
 
+function usuarioEsADM() {
+  const roles = String(appState.usuario.rol || '')
+    .toUpperCase()
+    .split(/[,\n;|]/)
+    .map((rol) => rol.trim())
+    .filter(Boolean);
+
+  return roles.includes('ADM');
+}
+
+function abrirPanelADM() {
+  const memberId = appState.usuario.memberId || '';
+  const url = `${MOR_PANEL_ADM_URL}?memberId=${encodeURIComponent(memberId)}`;
+  window.location.href = url;
+}
 /* =========================================================
    BLOQUE 05. NAVEGACIÓN
    ========================================================= */
@@ -634,6 +650,13 @@ function renderInicio() {
         ${renderNavCard('M', 'Multimedia', 'Videos y recursos', 'multimedia')}
         ${renderNavCard('✉', 'Mensajes', 'Avisos recibidos', 'mensajes')}
         ${renderNavCard('P', 'Perfil', 'Datos personales', 'perfil')}
+         ${usuarioEsADM() ? `
+  <button class="nav-card" type="button" data-action="abrir-panel-adm">
+    <div class="nav-icon">ADM</div>
+    <p class="nav-title">Panel ADM</p>
+    <p class="nav-desc">Gestión administrativa</p>
+  </button>
+` : ''}
       </div>
     </section>
   `;
@@ -1486,6 +1509,12 @@ function bindEventos() {
   document.querySelectorAll('[data-action="chat-enviar"]').forEach((el) => {
     el.addEventListener('click', function () {
       enviarMensajeChat();
+    });
+  });
+
+  document.querySelectorAll('[data-action="abrir-panel-adm"]').forEach((el) => {
+    el.addEventListener('click', function () {
+      abrirPanelADM();
     });
   });
 }

@@ -10,6 +10,7 @@ Alcance: lógica base de navegación PWA usuario
    ========================================================= */
 
 const APP_VERSION = 'v1.2';
+const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 
 const APP_CONFIG = {
   nombre: 'MORENA QRO',
@@ -418,3 +419,5 @@ async function inicializarApp() {
     await cargarUsuarioPwa(memberId);
   }
 }
+
+document.addEventListener('DOMContentLoaded', inicializarApp);

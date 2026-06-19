@@ -9,12 +9,12 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.1';
+const APP_VERSION = 'v1.2';
 
 const APP_CONFIG = {
   nombre: 'MORENA QRO',
   subtitulo: 'Capacitación · Querétaro',
-  versionLabel: 'MORENA QRO Capacitación · v1.1'
+  versionLabel: 'MORENA QRO Capacitación · v1.2'
 };
 
 /* =========================================================
@@ -84,6 +84,38 @@ function $(selector) {
 function obtenerParametroURL(nombre) {
   const params = new URLSearchParams(window.location.search);
   return params.get(nombre) || '';
+}
+
+async function cargarUsuarioPwa(memberId) {
+  try {
+    const url = `${MOR_API_USUARIO}?memberId=${encodeURIComponent(memberId)}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!data.ok || !data.usuario) {
+      appState.usuario.codigo = data.codigo || 'Usuario no validado';
+      renderApp();
+      return;
+    }
+
+    const usuario = data.usuario;
+
+    appState.usuario.memberId = usuario.memberId || memberId;
+    appState.usuario.nombre = usuario.nombreCompleto || usuario.nombre || 'Usuario MORENA';
+    appState.usuario.codigo = usuario.codigoControl || 'USU';
+    appState.usuario.rol = usuario.rolesApp || 'USU';
+    appState.usuario.municipio = usuario.municipio || 'Querétaro';
+    appState.usuario.avatarUrl = usuario.avatarUrl || '';
+
+    renderApp();
+
+  } catch (error) {
+    console.error('Error al cargar usuario PWA:', error);
+
+    appState.usuario.codigo = 'Error de conexión';
+    renderApp();
+  }
 }
 
 function escapeHTML(value) {
@@ -372,7 +404,7 @@ function bindEventos() {
    BLOQUE 14. INICIALIZACIÓN
    ========================================================= */
 
-function inicializarApp() {
+async function inicializarApp() {
   const memberId = obtenerParametroURL('memberId');
 
   if (memberId) {
@@ -381,8 +413,8 @@ function inicializarApp() {
   }
 
   renderApp();
-}
 
-document.addEventListener('DOMContentLoaded', function () {
-  inicializarApp();
-});
+  if (memberId) {
+    await cargarUsuarioPwa(memberId);
+  }
+}

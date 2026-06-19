@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: css/styles.css
-Versión: v1.10.1
+Versión: v1.10
 Alcance: estilos base de la PWA usuario
 */
 
@@ -312,16 +312,15 @@ body {
 }
 
 .identity-card {
-  position: relative;
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 10px;
-  min-height: 52px;
-  padding: 4px 0 8px;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
+  gap: 8px;
+  min-height: 58px;
+  border: 1px solid var(--morena-border);
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 8px;
 }
 
 .identity-avatar {
@@ -365,50 +364,53 @@ body {
 
 .identity-main {
   min-width: 0;
-  padding-right: 112px;
 }
 
 .identity-main h2 {
   margin: 0;
-  font-size: 11.8px;
-  line-height: 1.14;
-  font-weight: 820;
+  font-size: 13.7px;
+  line-height: 1.12;
+  font-weight: 850;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.identity-perfil {
-  margin: 3px 0 0;
-  font-size: 10.4px;
+.identity-main p {
+  margin: 2px 0 0;
+  font-size: 10.7px;
   line-height: 1.12;
   color: var(--text-muted);
-  font-weight: 760;
-  text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.identity-main strong {
+  color: var(--morena-primary);
+  font-weight: 820;
 }
 
 .identity-tech {
-  position: absolute;
-  top: 3px;
-  right: 0;
   display: grid;
   justify-items: end;
   gap: 2px;
-  min-width: 0;
-  padding-left: 0;
-  border-left: 0;
+  min-width: 82px;
+  padding-left: 7px;
+  border-left: 1px solid rgba(122, 11, 46, 0.11);
 }
 
-.identity-tech span,
-.identity-tech small {
-  font-size: 8.9px;
-  line-height: 1.08;
-  color: rgba(117, 97, 106, 0.72);
-  font-weight: 680;
+.identity-tech span {
+  font-size: 9.7px;
+  color: var(--text-muted);
+  font-weight: 760;
   white-space: nowrap;
+}
+
+.identity-tech small {
+  font-size: 10.2px;
+  color: var(--morena-primary);
+  font-weight: 850;
 }
 
 .home-banner {
@@ -1125,94 +1127,4 @@ body {
   .chat-box {
     padding: 8px;
   }
-}
-
-/* =========================================================
-   OVERRIDE IDENTIDAD HOME v1.10.2
-   ========================================================= */
-
-.identity-card {
-  position: relative !important;
-  display: grid !important;
-  grid-template-columns: auto 1fr auto !important;
-  align-items: center !important;
-  gap: 10px !important;
-  min-height: 58px !important;
-  padding: 8px 2px 10px !important;
-  margin: 0 !important;
-  background: transparent !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-
-.identity-avatar {
-  width: 52px !important;
-  height: 52px !important;
-  border-radius: 999px !important;
-  background: transparent !important;
-  border: 0 !important;
-}
-
-.identity-avatar img {
-  width: 52px !important;
-  height: 52px !important;
-  border-radius: 999px !important;
-  object-fit: cover !important;
-}
-
-.identity-avatar small {
-  right: -1px !important;
-  bottom: -1px !important;
-  width: 16px !important;
-  height: 16px !important;
-  font-size: 8px !important;
-}
-
-.identity-main {
-  min-width: 0 !important;
-  padding-right: 6px !important;
-}
-
-.identity-main h2 {
-  margin: 0 !important;
-  font-size: 15px !important;
-  line-height: 1.12 !important;
-  font-weight: 600 !important;
-  color: var(--text-main) !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-.identity-perfil {
-  margin: 4px 0 0 !important;
-  font-size: 12.5px !important;
-  line-height: 1.12 !important;
-  font-weight: 600 !important;
-  color: rgba(117, 97, 106, 0.9) !important;
-  text-transform: none !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-.identity-tech {
-  align-self: start !important;
-  justify-items: end !important;
-  min-width: 96px !important;
-  padding-top: 4px !important;
-  padding-left: 0 !important;
-  border-left: 0 !important;
-}
-
-.identity-tech span,
-.identity-tech small,
-.identity-code,
-.identity-version {
-  font-size: 9px !important;
-  line-height: 1.1 !important;
-  font-weight: 520 !important;
-  color: rgba(117, 97, 106, 0.48) !important;
-  white-space: nowrap !important;
 }

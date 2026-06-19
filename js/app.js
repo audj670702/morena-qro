@@ -1273,13 +1273,15 @@ function renderConversaciones() {
     `;
   }
 
+  const conversacionesDirectas = appState.conversaciones.filter((conv) => conv.canalFijo !== true);
+
   return `
     <article class="info-card">
       <h3 class="info-title">Conversaciones recientes</h3>
 
-      ${appState.conversaciones.length ? `
+      ${conversacionesDirectas.length ? `
         <div class="list compact-list">
-          ${appState.conversaciones.map((conv) => `
+          ${conversacionesDirectas.map((conv) => `
             <article class="list-row">
               <div>
                 <p class="list-title">

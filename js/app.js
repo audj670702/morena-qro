@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.9
+Versión: v1.10.2.10
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.9';
+const APP_VERSION = 'v1.10.2.10';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -526,6 +526,10 @@ function usuarioEsADM() {
   return roles.includes('ADM');
 }
 
+function haySesionActiva() {
+  return Boolean(appState.usuario.memberId);
+}
+
 function abrirPanelADM() {
   const memberId = appState.usuario.memberId || '';
   const url = `${MOR_PANEL_ADM_URL}?memberId=${encodeURIComponent(memberId)}`;
@@ -799,26 +803,36 @@ function renderInicioBannerFacebook() {
 
 function renderModuloRow(icono, titulo, vista, contador) {
   const total = Number(contador || 0);
+  const bloqueado = !haySesionActiva();
 
   return `
-    <button class="nav-card nav-row" type="button" data-view="${escapeHTML(vista)}">
+    <button
+      class="nav-card nav-row ${bloqueado ? 'nav-locked' : ''}"
+      type="button"
+      ${bloqueado ? 'data-action="modulo-bloqueado"' : `data-view="${escapeHTML(vista)}"`}
+    >
       <div class="nav-icon">${escapeHTML(icono)}</div>
       <p class="nav-title">${escapeHTML(titulo)}</p>
-      ${total > 0 ? `<span class="badge warn nav-badge">${total}</span>` : ''}
-      <span class="nav-chevron">›</span>
+      ${total > 0 && !bloqueado ? `<span class="badge warn nav-badge">${total}</span>` : ''}
+      ${bloqueado ? `<span class="nav-lock">🔒</span>` : `<span class="nav-chevron">›</span>`}
     </button>
   `;
 }
 
 function renderModuloActionRow(icono, titulo, action, contador) {
   const total = Number(contador || 0);
+  const bloqueado = !haySesionActiva();
 
   return `
-    <button class="nav-card nav-row" type="button" data-action="${escapeHTML(action)}">
+    <button
+      class="nav-card nav-row ${bloqueado ? 'nav-locked' : ''}"
+      type="button"
+      data-action="${bloqueado ? 'modulo-bloqueado' : escapeHTML(action)}"
+    >
       <div class="nav-icon">${escapeHTML(icono)}</div>
       <p class="nav-title">${escapeHTML(titulo)}</p>
-      ${total > 0 ? `<span class="badge warn nav-badge">${total}</span>` : ''}
-      <span class="nav-chevron">›</span>
+      ${total > 0 && !bloqueado ? `<span class="badge warn nav-badge">${total}</span>` : ''}
+      ${bloqueado ? `<span class="nav-lock">🔒</span>` : `<span class="nav-chevron">›</span>`}
     </button>
   `;
 }
@@ -1615,6 +1629,12 @@ document.querySelectorAll('[data-action="refresh"]').forEach((el) => {
 });
 
    document.querySelectorAll('[data-action="iniciar-sesion"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    window.location.href = MOR_ACCESS_URL;
+  });
+});
+
+   document.querySelectorAll('[data-action="modulo-bloqueado"]').forEach((el) => {
   el.addEventListener('click', function () {
     window.location.href = MOR_ACCESS_URL;
   });

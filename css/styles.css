@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: css/styles.css
-Versión: v1.10.2.8.6
+Versión: v1.10.2.8.7
 Alcance: estilos base de la PWA usuario
 */
 
@@ -507,6 +507,27 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+}
+
+.home-access-login {
+  width: 100%;
+  min-height: 148px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: #5E0C0C;
+  box-shadow: 0 10px 24px rgba(59, 6, 24, 0.10);
+}
+
+.home-access-login-btn {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #FFFFFF;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
 }
 
 .home-feature-card {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morena-qro-v1-10-2-16';
+const CACHE_NAME = 'morena-qro-v1-10-2-17';
 
 const APP_FILES = [
   './',
@@ -8,9 +8,10 @@ const APP_FILES = [
   './js/app.js',
   './icon-192.png',
   './icon-512.png',
-  './Logo_Mor.png',
-  './Logo_MORENA_Qro.png',
-  './iphone-install.mp4'
+  './assets/Logo_Mor.png',
+  './assets/Logo_MORENA_Qro.png',
+  './assets/icon-192.png',
+  './assets/iphone-install.mp4'
 ];
 
 self.addEventListener('install', (event) => {

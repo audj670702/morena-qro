@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.13
+Versión: v1.10.2.14
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.13';
+const APP_VERSION = 'v1.10.2.14';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -26,6 +26,14 @@ const MOR_ACCESS_URL = 'https://www.scad.mx/mor-acceso';
 const APP_LOGO_URL = './assets/Logo_Mor.png';
 const SCAD_LOGO_URL = './assets/icon-192.png';
 const MORENA_FACEBOOK_URL = 'https://www.facebook.com/share/1A7utqCu8i/';
+const IOS_TUTORIAL_URL = './iphone-install.mp4';
+
+const USER_AGENT = navigator.userAgent || '';
+const IS_IOS = /iPad|iPhone|iPod/.test(USER_AGENT) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(USER_AGENT);
+const IS_STANDALONE =
+  (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+  window.navigator.standalone === true;
 
 const APP_CONFIG = {
   nombre: 'MORENA QRO',
@@ -82,7 +90,13 @@ chatContacto: null,
 chatMensajes: [],
 chatCargando: false,
 chatError: '',
-chatTexto: ''
+chatTexto: '',
+instalacion: {
+  estado: 'web',
+  instalable: false,
+  instalando: false,
+  mensaje: 'App'
+}
 };
 
 /* =========================================================
@@ -545,6 +559,128 @@ function abrirMisActividades() {
   window.location.href = url;
 }
 
+let deferredPrompt = null;
+
+function configurarInstalacionPwa() {
+  actualizarEstadoInstalacionPwa();
+
+  window.addEventListener('beforeinstallprompt', function (event) {
+    event.preventDefault();
+
+    deferredPrompt = event;
+
+    if (IS_IOS || IS_STANDALONE) {
+      return;
+    }
+
+    appState.instalacion.estado = 'instalable';
+    appState.instalacion.instalable = true;
+    appState.instalacion.instalando = false;
+    appState.instalacion.mensaje = 'Instalar';
+
+    renderApp();
+  });
+
+  window.addEventListener('appinstalled', function () {
+    deferredPrompt = null;
+
+    appState.instalacion.estado = 'instalada';
+    appState.instalacion.instalable = false;
+    appState.instalacion.instalando = false;
+    appState.instalacion.mensaje = 'App instalada';
+
+    renderApp();
+  });
+}
+
+function actualizarEstadoInstalacionPwa() {
+  if (IS_STANDALONE) {
+    appState.instalacion.estado = 'instalada';
+    appState.instalacion.instalable = false;
+    appState.instalacion.instalando = false;
+    appState.instalacion.mensaje = 'App instalada';
+    return;
+  }
+
+  if (IS_IOS) {
+    appState.instalacion.estado = 'ios';
+    appState.instalacion.instalable = false;
+    appState.instalacion.instalando = false;
+    appState.instalacion.mensaje = IS_SAFARI ? 'Instalar iOS' : 'iOS';
+    return;
+  }
+
+  if (deferredPrompt) {
+    appState.instalacion.estado = 'instalable';
+    appState.instalacion.instalable = true;
+    appState.instalacion.instalando = false;
+    appState.instalacion.mensaje = 'Instalar';
+    return;
+  }
+
+  appState.instalacion.estado = 'web';
+  appState.instalacion.instalable = false;
+  appState.instalacion.instalando = false;
+  appState.instalacion.mensaje = 'App';
+}
+
+async function instalarPwa() {
+  if (!deferredPrompt) {
+    actualizarEstadoInstalacionPwa();
+    renderApp();
+    return;
+  }
+
+  appState.instalacion.instalando = true;
+  appState.instalacion.mensaje = 'Instalando...';
+  renderApp();
+
+  try {
+    deferredPrompt.prompt();
+
+    const choice = await deferredPrompt.userChoice;
+
+    if (choice && choice.outcome === 'accepted') {
+      appState.instalacion.estado = 'instalando';
+      appState.instalacion.instalable = false;
+      appState.instalacion.instalando = true;
+      appState.instalacion.mensaje = 'Instalando...';
+
+      window.setTimeout(function () {
+        if (!IS_IOS && !IS_STANDALONE) {
+          appState.instalacion.estado = 'instalada';
+          appState.instalacion.instalable = false;
+          appState.instalacion.instalando = false;
+          appState.instalacion.mensaje = 'App instalada';
+          renderApp();
+        }
+      }, 60000);
+
+    } else {
+      appState.instalacion.estado = 'web';
+      appState.instalacion.instalable = false;
+      appState.instalacion.instalando = false;
+      appState.instalacion.mensaje = 'App';
+    }
+
+  } catch (error) {
+    console.error('Error al instalar PWA:', error);
+
+    appState.instalacion.estado = 'web';
+    appState.instalacion.instalable = false;
+    appState.instalacion.instalando = false;
+    appState.instalacion.mensaje = 'App';
+
+  } finally {
+    deferredPrompt = null;
+    renderApp();
+  }
+}
+
+function abrirTutorialIos() {
+  window.location.href = IOS_TUTORIAL_URL;
+}
+
 function renderMensajesNavCard() {
   const pendientes = Number(appState.mensajesPendientesTotal || 0);
 
@@ -628,12 +764,56 @@ function renderHeader() {
       <img class="app-logo-img" src="${escapeHTML(APP_LOGO_URL)}" alt="MORENA QRO" />
 
       <div class="topbar-actions">
-        <span class="install-pill">App</span>
+        ${renderInstallControl()}
         <button class="topbar-icon" type="button" data-action="refresh" aria-label="Actualizar">
           ↻
         </button>
       </div>
     </header>
+  `;
+}
+
+function renderInstallControl() {
+  const instalacion = appState.instalacion || {};
+  const estado = instalacion.estado || 'web';
+  const mensaje = instalacion.mensaje || 'App';
+
+  if (estado === 'instalable') {
+    return `
+      <button class="install-pill install-action" type="button" data-action="instalar-pwa">
+        ${escapeHTML(mensaje)}
+      </button>
+    `;
+  }
+
+  if (estado === 'ios') {
+    return `
+      <button class="install-pill install-action" type="button" data-action="tutorial-ios">
+        ${escapeHTML(mensaje)}
+      </button>
+    `;
+  }
+
+  if (estado === 'instalando') {
+    return `
+      <span class="install-pill install-status">
+        Instalando...
+      </span>
+    `;
+  }
+
+  if (estado === 'instalada') {
+    return `
+      <span class="install-pill install-status">
+        App instalada
+      </span>
+    `;
+  }
+
+  return `
+    <span class="install-pill">
+      App
+    </span>
   `;
 }
 
@@ -1628,6 +1808,18 @@ document.querySelectorAll('[data-action="refresh"]').forEach((el) => {
   });
 });
 
+   document.querySelectorAll('[data-action="instalar-pwa"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    instalarPwa();
+  });
+});
+
+document.querySelectorAll('[data-action="tutorial-ios"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    abrirTutorialIos();
+  });
+});
+
    document.querySelectorAll('[data-action="iniciar-sesion"]').forEach((el) => {
   el.addEventListener('click', function () {
     window.location.href = MOR_ACCESS_URL;
@@ -1845,6 +2037,7 @@ async function inicializarApp() {
   }
 
   renderApp();
+   configurarInstalacionPwa();
 
 if (memberId) {
 await cargarUsuarioPwa(memberId);

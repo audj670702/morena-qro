@@ -10,7 +10,7 @@ Alcance: estilos base de la PWA usuario
    ========================================================= */
 
 :root {
-  --morena-primary: #7A0B2E;
+  --morena-primary: #5E0C0C;
   --morena-dark: #3B0618;
   --morena-soft: #F8EEF3;
   --morena-border: rgba(122, 11, 46, 0.18);
@@ -985,7 +985,7 @@ body {
   position: relative;
   overflow: hidden;
   border-radius: 24px;
-  background: linear-gradient(135deg, #7A0B2E, #3B0618);
+  background: linear-gradient(135deg, #5E0C0C, #3B0618);
   color: #FFFFFF;
   padding: 16px;
   min-height: 230px;
@@ -1120,7 +1120,7 @@ body {
 .media-section-head button {
   border: 0;
   background: #F8EEF3;
-  color: #7A0B2E;
+  color: #5E0C0C;
   border-radius: 999px;
   padding: 7px 10px;
   font-size: 12px;
@@ -1151,7 +1151,7 @@ body {
   border-radius: 16px;
   display: grid;
   place-items: center;
-  background: #7A0B2E;
+  background: #5E0C0C;
   color: #FFFFFF;
   font-weight: 900;
 }
@@ -1173,7 +1173,7 @@ body {
   border: 0;
   border-radius: 999px;
   padding: 7px 10px;
-  background: #7A0B2E;
+  background: #5E0C0C;
   color: #FFFFFF;
   font-size: 11px;
   font-weight: 820;
@@ -1226,7 +1226,7 @@ body {
   height: 34px;
   border-radius: 12px;
   background: #F8EEF3;
-  color: #7A0B2E;
+  color: #5E0C0C;
   font-weight: 900;
   cursor: pointer;
 }
@@ -1282,7 +1282,7 @@ body {
   border: 1px solid rgba(122, 11, 46, 0.16);
   border-radius: 999px;
   background: #FFFFFF;
-  color: #7A0B2E;
+  color: #5E0C0C;
   padding: 8px 11px;
   font-size: 12px;
   font-weight: 820;
@@ -1290,7 +1290,7 @@ body {
 }
 
 .media-chip.active {
-  background: #7A0B2E;
+  background: #5E0C0C;
   color: #FFFFFF;
 }
 
@@ -1397,9 +1397,9 @@ body {
 
 .chat-bubble.mine {
   justify-self: end;
-  background: #7A0B2E;
+  background: #5E0C0C;
   color: #FFFFFF;
-  border-color: #7A0B2E;
+  border-color: #5E0C0C;
   border-bottom-right-radius: 5px;
 }
 

@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.15
+Versión: v1.10.2.16
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.15';
+const APP_VERSION = 'v1.10.2.16';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -30,6 +30,7 @@ const IOS_TUTORIAL_URL = './iphone-install.mp4';
 
 const USER_AGENT = navigator.userAgent || '';
 const IS_IOS = /iPad|iPhone|iPod/.test(USER_AGENT) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const IS_ANDROID = /Android/i.test(USER_AGENT);
 const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(USER_AGENT);
 const IS_STANDALONE =
   (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
@@ -95,7 +96,7 @@ instalacion: {
   estado: 'web',
   instalable: false,
   instalando: false,
-  mensaje: 'App'
+  mensaje: 'Web'
 }
 };
 
@@ -569,14 +570,14 @@ function configurarInstalacionPwa() {
 
     deferredPrompt = event;
 
-    if (IS_IOS || IS_STANDALONE) {
-      return;
-    }
+if (IS_IOS || IS_STANDALONE || !IS_ANDROID) {
+  return;
+}
 
-    appState.instalacion.estado = 'instalable';
-    appState.instalacion.instalable = true;
-    appState.instalacion.instalando = false;
-    appState.instalacion.mensaje = 'Instalar';
+appState.instalacion.estado = 'instalable';
+appState.instalacion.instalable = true;
+appState.instalacion.instalando = false;
+appState.instalacion.mensaje = 'Instalar app';
 
     renderApp();
   });
@@ -606,22 +607,22 @@ function actualizarEstadoInstalacionPwa() {
     appState.instalacion.estado = 'ios';
     appState.instalacion.instalable = false;
     appState.instalacion.instalando = false;
-    appState.instalacion.mensaje = IS_SAFARI ? 'Instalar iOS' : 'iOS';
+    appState.instalacion.mensaje = 'Instalar iOS';
     return;
   }
 
-  if (deferredPrompt) {
+  if (IS_ANDROID && deferredPrompt) {
     appState.instalacion.estado = 'instalable';
     appState.instalacion.instalable = true;
     appState.instalacion.instalando = false;
-    appState.instalacion.mensaje = 'Instalar';
+    appState.instalacion.mensaje = 'Instalar app';
     return;
   }
 
   appState.instalacion.estado = 'web';
   appState.instalacion.instalable = false;
   appState.instalacion.instalando = false;
-  appState.instalacion.mensaje = 'App';
+  appState.instalacion.mensaje = 'Web';
 }
 
 async function instalarPwa() {
@@ -660,7 +661,7 @@ async function instalarPwa() {
       appState.instalacion.estado = 'web';
       appState.instalacion.instalable = false;
       appState.instalacion.instalando = false;
-      appState.instalacion.mensaje = 'App';
+      appState.instalacion.mensaje = 'Web';
     }
 
   } catch (error) {
@@ -669,7 +670,7 @@ async function instalarPwa() {
     appState.instalacion.estado = 'web';
     appState.instalacion.instalable = false;
     appState.instalacion.instalando = false;
-    appState.instalacion.mensaje = 'App';
+    appState.instalacion.mensaje = 'Web';
 
   } finally {
     deferredPrompt = null;
@@ -776,12 +777,12 @@ function renderHeader() {
 function renderInstallControl() {
   const instalacion = appState.instalacion || {};
   const estado = instalacion.estado || 'web';
-  const mensaje = instalacion.mensaje || 'App';
+  const mensaje = instalacion.mensaje || 'Web';
 
   if (estado === 'instalable') {
     return `
       <button class="install-pill install-action" type="button" data-action="instalar-pwa">
-        ${escapeHTML(mensaje)}
+        ${escapeHTML(mensaje || 'Instalar app')}
       </button>
     `;
   }
@@ -789,7 +790,7 @@ function renderInstallControl() {
   if (estado === 'ios') {
     return `
       <button class="install-pill install-action" type="button" data-action="tutorial-ios">
-        ${escapeHTML(mensaje)}
+        ${escapeHTML(mensaje || 'Instalar iOS')}
       </button>
     `;
   }
@@ -811,8 +812,8 @@ function renderInstallControl() {
   }
 
   return `
-    <span class="install-pill">
-      App
+    <span class="install-pill install-status">
+      Web
     </span>
   `;
 }

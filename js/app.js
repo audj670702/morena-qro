@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.8
+Versión: v1.10.2.8.1
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.8';
+const APP_VERSION = 'v1.10.2.8.1';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -889,15 +889,11 @@ function renderModalFacebookInicio() {
           `}
         </div>
 
-        <div class="fb-modal-actions">
-          <button class="btn btn-secondary" type="button" data-action="facebook-modal-cerrar">
-            Cerrar
-          </button>
-
-          <button class="btn btn-primary" type="button" data-action="facebook-abrir">
-            Abrir en Facebook
-          </button>
-        </div>
+<div class="fb-modal-actions single">
+  <button class="btn btn-secondary" type="button" data-action="facebook-modal-cerrar">
+    Cerrar
+  </button>
+</div>
       </section>
     </div>
   `;
@@ -1830,12 +1826,6 @@ document.querySelectorAll('[data-action="facebook-modal-cerrar"]').forEach((el) 
   el.addEventListener('click', function () {
     appState.facebookModal = false;
     renderApp();
-  });
-});
-
-document.querySelectorAll('[data-action="facebook-abrir"]').forEach((el) => {
-  el.addEventListener('click', function () {
-    abrirFacebookInicio();
   });
 });
 

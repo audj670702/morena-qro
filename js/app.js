@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.7
+Versión: v1.10.2.8
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.7';
+const APP_VERSION = 'v1.10.2.8';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -65,6 +65,7 @@ multimediaModal: '',
 multimediaBusqueda: '',
 multimediaCategoria: 'Todos',
 multimediaTipo: '',
+facebookModal: false,
 avisos: [],
 avisosCanal: null,
 avisosCargando: false,
@@ -714,6 +715,8 @@ function renderInicio() {
         ${renderModuloRow('◎', 'Grupos', 'perfil', 0)}
         ${usuarioEsADM() ? renderModuloADM() : ''}
       </div>
+
+      ${renderModalFacebookInicio()}
     </section>
   `;
 }
@@ -791,7 +794,7 @@ function renderInicioBannerFacebook() {
   const urlEmbed = construirEmbedFacebook(urlContenido);
 
   return `
-    <button class="home-feature-card facebook-feature-card" type="button" data-action="facebook-abrir">
+    <button class="home-feature-card facebook-feature-card" type="button" data-action="facebook-modal-abrir">
       <div class="feature-visual fb-feature-visual ${urlEmbed ? 'has-fb-embed' : ''}">
         ${urlEmbed ? `
           <div class="fb-feature-embed-wrap">
@@ -808,6 +811,8 @@ function renderInicioBannerFacebook() {
         ` : `
           <span class="fb-feature-icon">f</span>
         `}
+
+        <span class="fb-source-badge">f</span>
 
         <div class="feature-gradient">
           <div class="feature-copy">
@@ -840,6 +845,61 @@ function renderModuloADM() {
       <p class="nav-title">Panel ADM</p>
       <span class="nav-chevron">›</span>
     </button>
+  `;
+}
+
+function renderModalFacebookInicio() {
+  if (!appState.facebookModal) {
+    return '';
+  }
+
+  const item = obtenerFacebookInicioActual();
+  const titulo = item.titulo || 'Publicación de Facebook';
+  const urlContenido = item.urlContenido || item.urlMultimedia || MORENA_FACEBOOK_URL;
+  const urlEmbed = construirEmbedFacebook(urlContenido);
+
+  return `
+    <div class="fb-modal-overlay open">
+      <section class="fb-modal-card">
+        <div class="fb-modal-head">
+          <div>
+            <h3>${escapeHTML(titulo)}</h3>
+            <p>Publicación de Facebook</p>
+          </div>
+
+          <button class="fb-modal-close" type="button" data-action="facebook-modal-cerrar">
+            ×
+          </button>
+        </div>
+
+        <div class="fb-modal-frame">
+          ${urlEmbed ? `
+            <iframe
+              src="${escapeHTML(urlEmbed)}"
+              title="${escapeHTML(titulo)}"
+              frameborder="0"
+              scrolling="yes"
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+              allowfullscreen
+            ></iframe>
+          ` : `
+            <div class="fb-modal-empty">
+              No fue posible cargar la vista previa.
+            </div>
+          `}
+        </div>
+
+        <div class="fb-modal-actions">
+          <button class="btn btn-secondary" type="button" data-action="facebook-modal-cerrar">
+            Cerrar
+          </button>
+
+          <button class="btn btn-primary" type="button" data-action="facebook-abrir">
+            Abrir en Facebook
+          </button>
+        </div>
+      </section>
+    </div>
   `;
 }
 
@@ -1759,11 +1819,25 @@ document.querySelectorAll('[data-action="refresh"]').forEach((el) => {
     });
   });
 
-  document.querySelectorAll('[data-action="facebook-abrir"]').forEach((el) => {
-    el.addEventListener('click', function () {
-      abrirFacebookInicio();
-    });
+document.querySelectorAll('[data-action="facebook-modal-abrir"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    appState.facebookModal = true;
+    renderApp();
   });
+});
+
+document.querySelectorAll('[data-action="facebook-modal-cerrar"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    appState.facebookModal = false;
+    renderApp();
+  });
+});
+
+document.querySelectorAll('[data-action="facebook-abrir"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    abrirFacebookInicio();
+  });
+});
 
   document.querySelectorAll('[data-action="multimedia-reciente"]').forEach((el) => {
     el.addEventListener('click', function () {

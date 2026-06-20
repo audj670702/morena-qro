@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.8.9
+Versión: v1.10.2.9
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,10 +9,9 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.8.9';
+const APP_VERSION = 'v1.10.2.9';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
-const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
 const MOR_API_AVISOS = 'https://www.scad.mx/_functions/morAvisosSistema';
 const MOR_API_PENDIENTES = 'https://www.scad.mx/_functions/morMensajesPendientes';
@@ -56,9 +55,6 @@ usuario: {
 documentos: [],
 documentosCargando: false,
 documentosError: '',
-actividades: [],
-actividadesCargando: false,
-actividadesError: '',
 multimedia: [],
 multimediaCargando: false,
 multimediaError: '',
@@ -100,15 +96,6 @@ const datosDemo = {
       codigo: 'DOC-0001',
       tipo: 'PDF',
       estado: 'Disponible'
-    }
-  ],
-
-  actividades: [
-    {
-      titulo: 'Actividad de capacitación inicial',
-      codigo: 'ACT-0001',
-      fecha: 'Pendiente',
-      estado: 'Publicada'
     }
   ],
 
@@ -210,39 +197,6 @@ async function cargarDocumentosPwa(memberId) {
     appState.documentos = [];
     appState.documentosError = 'Error de conexión.';
     appState.documentosCargando = false;
-    renderApp();
-  }
-}
-
-async function cargarActividadesPwa(memberId) {
-  try {
-    appState.actividadesCargando = true;
-    appState.actividadesError = '';
-    renderApp();
-
-    const url = `${MOR_API_ACTIVIDADES}?memberId=${encodeURIComponent(memberId)}`;
-
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (!data.ok) {
-      appState.actividades = [];
-      appState.actividadesError = data.codigo || 'No fue posible cargar actividades.';
-      appState.actividadesCargando = false;
-      renderApp();
-      return;
-    }
-
-    appState.actividades = Array.isArray(data.actividades) ? data.actividades : [];
-    appState.actividadesCargando = false;
-    renderApp();
-
-  } catch (error) {
-    console.error('Error al cargar actividades PWA:', error);
-
-    appState.actividades = [];
-    appState.actividadesError = 'Error de conexión.';
-    appState.actividadesCargando = false;
     renderApp();
   }
 }
@@ -558,7 +512,6 @@ async function actualizarDatosPwa() {
 
   await cargarUsuarioPwa(memberId);
   await cargarDocumentosPwa(memberId);
-  await cargarActividadesPwa(memberId);
   await cargarMultimediaPwa(memberId);
   await cargarMensajesPwa(memberId);
 }
@@ -685,9 +638,6 @@ function renderVista() {
     case 'documentos':
       return renderDocumentos();
 
-    case 'actividades':
-      return renderActividades();
-
     case 'multimedia':
       return renderMultimedia();
 
@@ -714,7 +664,7 @@ function renderInicio() {
 
       <div class="nav-grid nav-list">
         ${renderModuloRow('▣', 'Mi capacitación', 'perfil', 0)}
-        ${renderModuloActionRow('◷', 'Mis Actividades', 'abrir-mis-actividades', appState.actividades.length)}
+        ${renderModuloActionRow('◷', 'Mis Actividades', 'abrir-mis-actividades', 0)}
         ${renderModuloRow('▤', 'Documentos', 'documentos', appState.documentos.length)}
         ${renderModuloRow('✉', 'Mensajes', 'mensajes', appState.mensajesPendientesTotal)}
         ${renderModuloRow('▶', 'Multimedia', 'multimedia', appState.multimedia.length)}
@@ -1041,96 +991,6 @@ function renderListaDocumentos() {
       `).join('')}
     </div>
   `;
-}
-
-/* =========================================================
-   BLOQUE 09. RENDER ACTIVIDADES
-   ========================================================= */
-
-function renderActividades() {
-  const contenido = renderListaActividades();
-
-  return `
-    <section>
-      <h2 class="section-title">Actividades</h2>
-      <p class="section-note">Actividades de capacitación disponibles.</p>
-
-      ${contenido}
-
-      ${renderBackButton()}
-    </section>
-  `;
-}
-
-function renderListaActividades() {
-  if (appState.actividadesCargando) {
-    return `
-      <article class="info-card">
-        <h3 class="info-title">Cargando actividades</h3>
-        <p class="info-meta">Consulta en proceso.</p>
-      </article>
-    `;
-  }
-
-  if (appState.actividadesError) {
-    return `
-      <article class="info-card">
-        <h3 class="info-title">Actividades no disponibles</h3>
-        <p class="info-meta">${escapeHTML(appState.actividadesError)}</p>
-      </article>
-    `;
-  }
-
-  if (!appState.actividades.length) {
-    return `
-      <article class="info-card">
-        <h3 class="info-title">Sin actividades disponibles</h3>
-        <p class="info-meta">No hay actividades asignadas para tu perfil.</p>
-      </article>
-    `;
-  }
-
-  return `
-    <div class="list">
-      ${appState.actividades.map((item) => `
-        <article class="list-row">
-          <div>
-            <p class="list-title">${escapeHTML(item.titulo)}</p>
-            <p class="list-meta">
-              ${escapeHTML(item.codigoControl || 'ACT')} · ${escapeHTML(item.tipoActividad || item.modalidad || 'Actividad')}
-            </p>
-            <p class="list-meta">
-              ${escapeHTML(formatearFechaActividad(item.fechaActividad))}${item.horaActividad ? ` · ${escapeHTML(item.horaActividad)}` : ''}
-            </p>
-            ${item.lugar ? `<p class="list-meta">${escapeHTML(item.lugar)}</p>` : ''}
-          </div>
-${item.urlActividad ? `
-  <a class="badge ok" href="${escapeHTML(item.urlActividad)}" target="_blank" rel="noopener">
-    Abrir
-  </a>
-` : ''}
-        </article>
-      `).join('')}
-    </div>
-  `;
-}
-
-function formatearFechaActividad(valor) {
-  if (!valor) {
-    return 'Fecha pendiente';
-  }
-
-  const fecha = new Date(valor);
-
-  if (isNaN(fecha.getTime())) {
-    return 'Fecha pendiente';
-  }
-
-  return fecha.toLocaleDateString('es-MX', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
 }
 
 /* =========================================================
@@ -1963,7 +1823,6 @@ async function inicializarApp() {
 if (memberId) {
 await cargarUsuarioPwa(memberId);
 await cargarDocumentosPwa(memberId);
-await cargarActividadesPwa(memberId);
 await cargarMultimediaPwa(memberId);
 await cargarMensajesPwa(memberId);
 }

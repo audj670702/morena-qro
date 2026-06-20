@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.11
+Versión: v1.10.2.12
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.11';
+const APP_VERSION = 'v1.10.2.12';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -1823,61 +1823,7 @@ function abrirFacebookInicio() {
 }
 
 function cerrarSesionLocal() {
-  appState.vistaActual = 'inicio';
-
-  appState.usuario = {
-    nombre: 'Usuario MORENA',
-    alias: '',
-    codigo: 'USU-0000',
-    rol: 'USU',
-    perfilPartido: '',
-    municipio: 'Querétaro',
-    email: '',
-    activo: false,
-    accesoApp: false,
-    avatarUrl: ''
-  };
-
-  appState.documentos = [];
-  appState.documentosCargando = false;
-  appState.documentosError = '';
-
-  appState.multimedia = [];
-  appState.multimediaCargando = false;
-  appState.multimediaError = '';
-  appState.multimediaActualId = '';
-  appState.multimediaModal = '';
-  appState.multimediaBusqueda = '';
-  appState.multimediaCategoria = 'Todos';
-  appState.multimediaTipo = '';
-  appState.facebookModal = false;
-
-  appState.avisos = [];
-  appState.avisosCanal = null;
-  appState.avisosCargando = false;
-  appState.avisosError = '';
-
-  appState.mensajesPendientesTotal = 0;
-  appState.mensajesPendientes = [];
-
-  appState.conversaciones = [];
-  appState.conversacionesCargando = false;
-  appState.conversacionesError = '';
-
-  appState.contactosBusqueda = '';
-  appState.contactosResultados = [];
-  appState.contactosCargando = false;
-  appState.contactosError = '';
-
-  appState.chatConversacion = null;
-  appState.chatContacto = null;
-  appState.chatMensajes = [];
-  appState.chatCargando = false;
-  appState.chatError = '';
-  appState.chatTexto = '';
-
-  const urlLimpia = window.location.origin + window.location.pathname;
-  window.location.replace(urlLimpia);
+  window.location.replace(`${MOR_ACCESS_URL}?logout=1`);
 }
 
 /* =========================================================

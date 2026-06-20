@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.12
+Versión: v1.10.2.13
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.12';
+const APP_VERSION = 'v1.10.2.13';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -1823,6 +1823,12 @@ function abrirFacebookInicio() {
 }
 
 function cerrarSesionLocal() {
+  const confirmar = window.confirm('¿Deseas cerrar sesión?');
+
+  if (!confirmar) {
+    return;
+  }
+
   window.location.replace(`${MOR_ACCESS_URL}?logout=1`);
 }
 

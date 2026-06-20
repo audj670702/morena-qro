@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.8.3
+Versión: v1.10.2.8
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,8 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.8.3';
-const MOR_ACCESS_URL = 'https://www.scad.mx/mor-acceso';
+const APP_VERSION = 'v1.10.2.8';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -23,7 +22,7 @@ const MOR_API_CONVERSACION_ABRIR = 'https://www.scad.mx/_functions/morConversaci
 const MOR_API_CONVERSACION_MENSAJES = 'https://www.scad.mx/_functions/morConversacionMensajes';
 const MOR_API_MENSAJE_ENVIAR = 'https://www.scad.mx/_functions/morMensajeEnviar';
 const MOR_PANEL_ADM_URL = 'https://www.scad.mx/mor-panel-adm';
-const APP_LOGO_URL = './assets/Logo_Mor.png';
+const APP_LOGO_URL = './assets/Logo_MORENA_Qro.png';
 const SCAD_LOGO_URL = './assets/icon-192.png';
 const MORENA_FACEBOOK_URL = 'https://www.facebook.com/share/1A7utqCu8i/';
 
@@ -578,10 +577,6 @@ function abrirPanelADM() {
   window.location.href = url;
 }
 
-function iniciarSesionMorena() {
-  window.location.href = MOR_ACCESS_URL;
-}
-
 function renderMensajesNavCard() {
   const pendientes = Number(appState.mensajesPendientesTotal || 0);
 
@@ -653,25 +648,20 @@ function renderHeader() {
 
   return `
     <header class="app-header">
-      <div class="topbar-left">
-        ${haySesion ? `
-          <button
-            class="topbar-session"
-            type="button"
-            data-action="logout-lite"
-            aria-label="Cerrar sesión"
-          >
-            ⎋
-          </button>
-        ` : ''}
+      <button
+        class="topbar-session"
+        type="button"
+        ${haySesion ? 'data-action="logout-lite"' : 'disabled'}
+        aria-label="${haySesion ? 'Cerrar sesión' : 'Iniciar sesión no disponible'}"
+      >
+        ${haySesion ? '⎋' : '↪'}
+      </button>
 
-        <img class="app-logo-img" src="${escapeHTML(APP_LOGO_URL)}" alt="MORENA" />
+      <img class="app-logo-img" src="${escapeHTML(APP_LOGO_URL)}" alt="MORENA QRO" />
 
-        ${!haySesion ? `
-          <button class="topbar-login-text" type="button" data-action="iniciar-sesion">
-            Iniciar sesión
-          </button>
-        ` : ''}
+      <div class="topbar-titlebox">
+        <h1 class="app-title">${escapeHTML(APP_CONFIG.nombre)}</h1>
+        <p class="app-subtitle">${escapeHTML(APP_CONFIG.subtitulo)}</p>
       </div>
 
       <div class="topbar-actions">
@@ -899,11 +889,15 @@ function renderModalFacebookInicio() {
           `}
         </div>
 
-<div class="fb-modal-actions single">
-  <button class="btn btn-secondary" type="button" data-action="facebook-modal-cerrar">
-    Cerrar
-  </button>
-</div>
+        <div class="fb-modal-actions">
+          <button class="btn btn-secondary" type="button" data-action="facebook-modal-cerrar">
+            Cerrar
+          </button>
+
+          <button class="btn btn-primary" type="button" data-action="facebook-abrir">
+            Abrir en Facebook
+          </button>
+        </div>
       </section>
     </div>
   `;
@@ -1839,6 +1833,12 @@ document.querySelectorAll('[data-action="facebook-modal-cerrar"]').forEach((el) 
   });
 });
 
+document.querySelectorAll('[data-action="facebook-abrir"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    abrirFacebookInicio();
+  });
+});
+
   document.querySelectorAll('[data-action="multimedia-reciente"]').forEach((el) => {
     el.addEventListener('click', function () {
       abrirMultimediaReciente();
@@ -1851,12 +1851,6 @@ document.querySelectorAll('[data-action="facebook-modal-cerrar"]').forEach((el) 
     });
   });
 }
-
-  document.querySelectorAll('[data-action="iniciar-sesion"]').forEach((el) => {
-    el.addEventListener('click', function () {
-      iniciarSesionMorena();
-    });
-  });
 
 function verMultimedia(id) {
   const item = appState.multimedia.find((media) => media.id === id);

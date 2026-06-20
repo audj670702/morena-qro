@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.8.8
+Versión: v1.10.2.8.9
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.8.8';
+const APP_VERSION = 'v1.10.2.8.9';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -22,6 +22,7 @@ const MOR_API_CONVERSACION_ABRIR = 'https://www.scad.mx/_functions/morConversaci
 const MOR_API_CONVERSACION_MENSAJES = 'https://www.scad.mx/_functions/morConversacionMensajes';
 const MOR_API_MENSAJE_ENVIAR = 'https://www.scad.mx/_functions/morMensajeEnviar';
 const MOR_PANEL_ADM_URL = 'https://www.scad.mx/mor-panel-adm';
+const MOR_MIS_ACTIVIDADES_URL = 'https://www.scad.mx/mor-mis-actividades';
 const MOR_ACCESS_URL = 'https://www.scad.mx/mor-acceso';
 const APP_LOGO_URL = './assets/Logo_Mor.png';
 const SCAD_LOGO_URL = './assets/icon-192.png';
@@ -578,6 +579,15 @@ function abrirPanelADM() {
   window.location.href = url;
 }
 
+function abrirMisActividades() {
+  const memberId = appState.usuario.memberId || '';
+  const url = memberId
+    ? `${MOR_MIS_ACTIVIDADES_URL}?memberId=${encodeURIComponent(memberId)}`
+    : MOR_MIS_ACTIVIDADES_URL;
+
+  window.location.href = url;
+}
+
 function renderMensajesNavCard() {
   const pendientes = Number(appState.mensajesPendientesTotal || 0);
 
@@ -704,7 +714,7 @@ function renderInicio() {
 
       <div class="nav-grid nav-list">
         ${renderModuloRow('▣', 'Mi capacitación', 'perfil', 0)}
-        ${renderModuloRow('◷', 'Actividades', 'actividades', appState.actividades.length)}
+        ${renderModuloActionRow('◷', 'Mis Actividades', 'abrir-mis-actividades', appState.actividades.length)}
         ${renderModuloRow('▤', 'Documentos', 'documentos', appState.documentos.length)}
         ${renderModuloRow('✉', 'Mensajes', 'mensajes', appState.mensajesPendientesTotal)}
         ${renderModuloRow('▶', 'Multimedia', 'multimedia', appState.multimedia.length)}
@@ -842,6 +852,19 @@ function renderModuloRow(icono, titulo, vista, contador) {
 
   return `
     <button class="nav-card nav-row" type="button" data-view="${escapeHTML(vista)}">
+      <div class="nav-icon">${escapeHTML(icono)}</div>
+      <p class="nav-title">${escapeHTML(titulo)}</p>
+      ${total > 0 ? `<span class="badge warn nav-badge">${total}</span>` : ''}
+      <span class="nav-chevron">›</span>
+    </button>
+  `;
+}
+
+function renderModuloActionRow(icono, titulo, action, contador) {
+  const total = Number(contador || 0);
+
+  return `
+    <button class="nav-card nav-row" type="button" data-action="${escapeHTML(action)}">
       <div class="nav-icon">${escapeHTML(icono)}</div>
       <p class="nav-title">${escapeHTML(titulo)}</p>
       ${total > 0 ? `<span class="badge warn nav-badge">${total}</span>` : ''}
@@ -1836,6 +1859,12 @@ document.querySelectorAll('[data-action="refresh"]').forEach((el) => {
       abrirPanelADM();
     });
   });
+
+   document.querySelectorAll('[data-action="abrir-mis-actividades"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    abrirMisActividades();
+  });
+});
 
 document.querySelectorAll('[data-action="facebook-modal-abrir"]').forEach((el) => {
   el.addEventListener('click', function () {

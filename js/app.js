@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.18
+Versión: v1.10.2.19
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.18';
+const APP_VERSION = 'v1.10.2.19';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -561,8 +561,15 @@ function abrirMisActividades() {
 }
 
 let deferredPrompt = null;
+let instalacionPwaConfigurada = false;
 
 function configurarInstalacionPwa() {
+  if (instalacionPwaConfigurada) {
+    return;
+  }
+
+  instalacionPwaConfigurada = true;
+
   actualizarEstadoInstalacionPwa();
 
   window.addEventListener('beforeinstallprompt', function (event) {
@@ -570,14 +577,14 @@ function configurarInstalacionPwa() {
 
     deferredPrompt = event;
 
-if (IS_IOS || IS_STANDALONE || !IS_ANDROID) {
-  return;
-}
+    if (IS_IOS || IS_STANDALONE) {
+      return;
+    }
 
-appState.instalacion.estado = 'instalable';
-appState.instalacion.instalable = true;
-appState.instalacion.instalando = false;
-appState.instalacion.mensaje = 'Instalar app';
+    appState.instalacion.estado = 'instalable';
+    appState.instalacion.instalable = true;
+    appState.instalacion.instalando = false;
+    appState.instalacion.mensaje = 'Instalar app';
 
     renderApp();
   });
@@ -611,7 +618,7 @@ function actualizarEstadoInstalacionPwa() {
     return;
   }
 
-  if (IS_ANDROID && deferredPrompt) {
+  if (deferredPrompt) {
     appState.instalacion.estado = 'instalable';
     appState.instalacion.instalable = true;
     appState.instalacion.instalando = false;
@@ -2047,5 +2054,7 @@ await cargarMultimediaPwa(memberId);
 await cargarMensajesPwa(memberId);
 }
 }
+
+configurarInstalacionPwa();
 
 document.addEventListener('DOMContentLoaded', inicializarApp);

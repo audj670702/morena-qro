@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.8.2
+Versión: v1.10.2.8.3
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.8.2';
+const APP_VERSION = 'v1.10.2.8.3';
 const MOR_ACCESS_URL = 'https://www.scad.mx/mor-acceso';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
@@ -653,25 +653,25 @@ function renderHeader() {
 
   return `
     <header class="app-header">
-      <button
-        class="topbar-session"
-        type="button"
-        ${haySesion ? 'data-action="logout-lite"' : 'data-action="iniciar-sesion"'}
-        aria-label="${haySesion ? 'Cerrar sesión' : 'Iniciar sesión'}"
-      >
-        ${haySesion ? '⎋' : '↪'}
-      </button>
-
-      <img class="app-logo-img" src="${escapeHTML(APP_LOGO_URL)}" alt="MORENA" />
-
-      <div class="topbar-titlebox topbar-loginbox">
+      <div class="topbar-left">
         ${haySesion ? `
-          <span class="topbar-session-label">Sesión activa</span>
-        ` : `
-          <button class="topbar-login-btn" type="button" data-action="iniciar-sesion">
+          <button
+            class="topbar-session"
+            type="button"
+            data-action="logout-lite"
+            aria-label="Cerrar sesión"
+          >
+            ⎋
+          </button>
+        ` : ''}
+
+        <img class="app-logo-img" src="${escapeHTML(APP_LOGO_URL)}" alt="MORENA" />
+
+        ${!haySesion ? `
+          <button class="topbar-login-text" type="button" data-action="iniciar-sesion">
             Iniciar sesión
           </button>
-        `}
+        ` : ''}
       </div>
 
       <div class="topbar-actions">

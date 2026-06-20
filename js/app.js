@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.8.6
+Versión: v1.10.2.8.7
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.8.6';
+const APP_VERSION = 'v1.10.2.8.7';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -22,6 +22,7 @@ const MOR_API_CONVERSACION_ABRIR = 'https://www.scad.mx/_functions/morConversaci
 const MOR_API_CONVERSACION_MENSAJES = 'https://www.scad.mx/_functions/morConversacionMensajes';
 const MOR_API_MENSAJE_ENVIAR = 'https://www.scad.mx/_functions/morMensajeEnviar';
 const MOR_PANEL_ADM_URL = 'https://www.scad.mx/mor-panel-adm';
+const MOR_ACCESS_URL = 'https://www.scad.mx/mor-acceso';
 const APP_LOGO_URL = './assets/Logo_Mor.png';
 const SCAD_LOGO_URL = './assets/icon-192.png';
 const MORENA_FACEBOOK_URL = 'https://www.facebook.com/share/1A7utqCu8i/';
@@ -746,10 +747,26 @@ function renderIdentityCard() {
 }
 
 function renderInicioContenidoDestacado() {
+  const haySesion = Boolean(appState.usuario.memberId);
+
+  if (!haySesion) {
+    return renderAccesoSinSesion();
+  }
+
   return `
     <section class="home-feature-grid">
       ${renderInicioBannerMultimedia()}
       ${renderInicioBannerFacebook()}
+    </section>
+  `;
+}
+
+function renderAccesoSinSesion() {
+  return `
+    <section class="home-access-login">
+      <button class="home-access-login-btn" type="button" data-action="iniciar-sesion">
+        Iniciar sesión
+      </button>
     </section>
   `;
 }
@@ -1711,6 +1728,12 @@ function bindEventos() {
 document.querySelectorAll('[data-action="refresh"]').forEach((el) => {
   el.addEventListener('click', function () {
     actualizarDatosPwa();
+  });
+});
+
+   document.querySelectorAll('[data-action="iniciar-sesion"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    window.location.href = MOR_ACCESS_URL;
   });
 });
 

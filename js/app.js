@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.5
+Versión: v1.10.2.6
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.5';
+const APP_VERSION = 'v1.10.2.6';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -784,6 +784,10 @@ function renderInicioBannerMultimedia() {
 }
 
 function renderInicioBannerFacebook() {
+  const item = obtenerFacebookInicioActual();
+  const titulo = item.titulo || 'Facebook';
+  const detalle = item.descripcion || 'MORENA QRO';
+
   return `
     <button class="home-feature-card facebook-feature-card" type="button" data-action="facebook-abrir">
       <div class="feature-visual fb-feature-visual">
@@ -791,8 +795,8 @@ function renderInicioBannerFacebook() {
 
         <div class="feature-gradient">
           <div class="feature-copy">
-            <strong>Facebook</strong>
-            <small>MORENA QRO</small>
+            <strong>${escapeHTML(titulo)}</strong>
+            ${detalle ? `<small>${escapeHTML(detalle)}</small>` : ''}
           </div>
         </div>
       </div>
@@ -1295,6 +1299,21 @@ function obtenerMultimediaActual() {
   return appState.multimedia.find((item) => item.id === appState.multimediaActualId) || appState.multimedia[0] || {};
 }
 
+function obtenerFacebookInicioActual() {
+  const facebookItems = appState.multimedia.filter((item) => {
+    const tipoFuente = normalizarTexto(item.tipoFuente);
+    const estadoContenido = String(item.estadoContenido || '').toUpperCase();
+    const publicado = !estadoContenido || estadoContenido === 'PUBLICADO';
+    const esFacebook = tipoFuente === 'facebook';
+
+    return esFacebook && publicado;
+  });
+
+  const destacado = facebookItems.find((item) => item.mostrarEnInicio === true);
+
+  return destacado || facebookItems[0] || {};
+}
+
 function obtenerCategoriasMultimedia() {
   const categorias = appState.multimedia
     .map((item) => item.categoria)
@@ -1714,9 +1733,9 @@ document.querySelectorAll('[data-action="refresh"]').forEach((el) => {
     });
   });
 
-     document.querySelectorAll('[data-action="facebook-abrir"]').forEach((el) => {
+  document.querySelectorAll('[data-action="facebook-abrir"]').forEach((el) => {
     el.addEventListener('click', function () {
-      window.open(MORENA_FACEBOOK_URL, '_blank', 'noopener');
+      abrirFacebookInicio();
     });
   });
 
@@ -1763,6 +1782,17 @@ function abrirMultimediaReciente() {
   }
 
   renderApp();
+}
+
+function abrirFacebookInicio() {
+  const item = obtenerFacebookInicioActual();
+  const url = item.urlContenido || MORENA_FACEBOOK_URL;
+
+  if (!url) {
+    return;
+  }
+
+  window.open(url, '_blank', 'noopener');
 }
 
 function cerrarSesionLocal() {

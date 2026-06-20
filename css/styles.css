@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: css/styles.css
-Versión: v1.10.2.9
+Versión: v1.10.2.10
 Alcance: estilos base de la PWA usuario
 */
 
@@ -209,6 +209,22 @@ body {
 
 .nav-card:active {
   transform: scale(0.99);
+}
+
+.nav-card.nav-locked {
+  opacity: 0.58;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.nav-card.nav-locked .nav-icon {
+  filter: grayscale(1);
+  opacity: 0.78;
+}
+
+.nav-lock {
+  color: rgba(117, 97, 106, 0.62);
+  font-size: 14px;
+  line-height: 1;
 }
 
 .nav-row {

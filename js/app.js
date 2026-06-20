@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.6.2
+Versión: v1.10.2.7
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.6.2';
+const APP_VERSION = 'v1.10.2.7';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -787,11 +787,27 @@ function renderInicioBannerFacebook() {
   const item = obtenerFacebookInicioActual();
   const titulo = item.titulo || 'Facebook';
   const detalle = item.descripcion || 'MORENA QRO';
+  const urlContenido = item.urlContenido || item.urlMultimedia || '';
+  const urlEmbed = construirEmbedFacebook(urlContenido);
 
   return `
     <button class="home-feature-card facebook-feature-card" type="button" data-action="facebook-abrir">
-      <div class="feature-visual fb-feature-visual">
-        <span class="fb-feature-icon">f</span>
+      <div class="feature-visual fb-feature-visual ${urlEmbed ? 'has-fb-embed' : ''}">
+        ${urlEmbed ? `
+          <div class="fb-feature-embed-wrap">
+            <iframe
+              class="fb-feature-embed"
+              src="${escapeHTML(urlEmbed)}"
+              title="${escapeHTML(titulo)}"
+              frameborder="0"
+              scrolling="no"
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+              allowfullscreen
+            ></iframe>
+          </div>
+        ` : `
+          <span class="fb-feature-icon">f</span>
+        `}
 
         <div class="feature-gradient">
           <div class="feature-copy">
@@ -1297,6 +1313,16 @@ function renderDetalleMultimedia(label, value) {
 
 function obtenerMultimediaActual() {
   return appState.multimedia.find((item) => item.id === appState.multimediaActualId) || appState.multimedia[0] || {};
+}
+
+function construirEmbedFacebook(url) {
+  const link = String(url || '').trim();
+
+  if (!link) {
+    return '';
+  }
+
+  return `https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(link)}&show_text=true&width=500`;
 }
 
 function obtenerFacebookInicioActual() {

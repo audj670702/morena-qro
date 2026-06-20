@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: css/styles.css
-Versión: v1.10.2.8.4
+Versión: v1.10.2.8.6
 Alcance: estilos base de la PWA usuario
 */
 
@@ -89,7 +89,7 @@ body {
   gap: 9px;
   padding: 11px;
   color: var(--white);
-  background: linear-gradient(135deg, rgba(122, 11, 46, 0.98), rgba(59, 6, 24, 0.96));
+  background: #5E0C0C;
 }
 
 .topbar-session,

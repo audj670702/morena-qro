@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.8.2
+Versión: v1.10.2.8.3
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.8.2';
+const APP_VERSION = 'v1.10.2.8.3';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_ACTIVIDADES = 'https://www.scad.mx/_functions/morActividades';
@@ -656,11 +656,6 @@ function renderHeader() {
       >
         ${haySesion ? '⎋' : '↪'}
       </button>
-
-      <div class="topbar-titlebox">
-        <h1 class="app-title">${escapeHTML(APP_CONFIG.nombre)}</h1>
-        <p class="app-subtitle">${escapeHTML(APP_CONFIG.subtitulo)}</p>
-      </div>
 
       <div class="topbar-actions">
         <span class="install-pill">App</span>

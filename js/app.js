@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.21
+Versión: v1.10.2.22
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.21';
+const APP_VERSION = 'v1.10.2.22';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -855,13 +855,13 @@ function renderInicio() {
       ${renderInicioContenidoDestacado()}
 
       <div class="nav-grid nav-list">
-        ${renderModuloRow('▣', 'Mi capacitación', 'perfil', 0)}
-        ${renderModuloActionRow('◷', 'Mis Actividades', 'abrir-mis-actividades', 0)}
-        ${renderModuloRow('▤', 'Documentos', 'documentos', appState.documentos.length)}
-        ${renderModuloRow('✉', 'Mensajes', 'mensajes', appState.mensajesPendientesTotal)}
-        ${renderModuloRow('▶', 'Multimedia', 'multimedia', appState.multimedia.length)}
-        ${renderModuloRow('◎', 'Grupos', 'perfil', 0)}
-        ${usuarioEsADM() ? renderModuloADM() : ''}
+${renderModuloRow('🎓', 'Mi capacitación', 'perfil', 0)}
+${renderModuloActionRow('📅', 'Mis Actividades', 'abrir-mis-actividades', 0)}
+${renderModuloRow('📄', 'Documentos', 'documentos', appState.documentos.length)}
+${renderModuloRow('✉️', 'Mensajes', 'mensajes', appState.mensajesPendientesTotal)}
+${renderModuloRow('▶️', 'Multimedia', 'multimedia', appState.multimedia.length)}
+${renderModuloRow('👥', 'Grupos', 'perfil', 0)}
+${usuarioEsADM() ? renderModuloADM() : ''}
       </div>
 
       ${renderModalFacebookInicio()}
@@ -1028,7 +1028,7 @@ function renderModuloActionRow(icono, titulo, action, contador) {
 function renderModuloADM() {
   return `
     <button class="nav-card nav-row adm-row" type="button" data-action="abrir-panel-adm">
-      <div class="nav-icon">ADM</div>
+      <div class="nav-icon">⚙️</div>
       <p class="nav-title">Panel ADM</p>
       <span class="nav-chevron">›</span>
     </button>

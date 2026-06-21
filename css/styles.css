@@ -1889,6 +1889,8 @@ button {
 
 .sms-chat-header {
   display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
   gap: 7px;
   margin-bottom: 8px;
 }
@@ -1912,6 +1914,22 @@ button {
   font-size: 11px;
   line-height: 1.15;
   color: var(--text-muted);
+
+
+   .sms-add-contact {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 28px;
+  border: 1px solid rgba(19, 122, 58, 0.22);
+  border-radius: 999px;
+  background: rgba(19, 122, 58, 0.08);
+  color: var(--ok);
+  padding: 6px 9px;
+  font-size: 10.8px;
+  line-height: 1;
+  font-weight: 850;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 .sms-avatar {
@@ -2221,6 +2239,48 @@ button {
   padding: 8px;
   text-align: left;
   color: inherit;
+  cursor: pointer;
+  box-shadow: none;
+  outline: none;
+}
+
+.sms-contact-regular-item {
+  grid-template-columns: 1fr auto;
+}
+
+.sms-contact-open-main {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: none;
+  outline: none;
+}
+
+.sms-contact-remove {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(122, 11, 46, 0.16);
+  border-radius: 999px;
+  background: #FFFFFF;
+  color: rgba(122, 11, 46, 0.72);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 700;
   cursor: pointer;
   box-shadow: none;
   outline: none;

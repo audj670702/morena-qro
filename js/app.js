@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.38
+Versión: v1.10.2.39
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.38';
+const APP_VERSION = 'v1.10.2.39';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -95,7 +95,7 @@ chatEnviando: false,
 chatError: '',
 chatTexto: '',
 mensajesBusquedaAbierta: false,
-mensajesPendientesAbierto: true,
+mensajesPendientesAbierto: false,
 contactosModo: 'regulares',
 mensajesSyncTimer: null,
 mensajesSyncEnCurso: false,
@@ -1712,7 +1712,7 @@ function renderSmsPendientes() {
 
   return `
     <article class="sms-card sms-pending-card">
-      <button class="sms-pending-head-toggle" type="button" data-action="sms-pendientes-toggle">
+      <button class="sms-pending-head-toggle ${hayPendientes ? 'has-pending' : ''}" type="button" data-action="sms-pendientes-toggle">
         <strong>Pendientes</strong>
 
         <span>

@@ -1700,27 +1700,49 @@ button {
   margin-bottom: 0;
 }
 
-.sms-section-head {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: start;
+.sms-pending-head-toggle {
+  width: 100%;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  margin-bottom: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--text-main);
+  padding: 0;
+  margin-bottom: 6px;
+  cursor: pointer;
+  text-align: left;
 }
 
-.sms-section-head strong {
-  display: block;
+.sms-pending-head-toggle strong {
   font-size: 13.4px;
-  line-height: 1.15;
+  line-height: 1.1;
   font-weight: 850;
 }
 
-.sms-section-head small {
-  display: block;
-  margin-top: 2px;
-  font-size: 11px;
-  line-height: 1.2;
+.sms-pending-head-toggle span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  min-width: 0;
+}
+
+.sms-pending-head-toggle small {
+  font-size: 10.7px;
+  line-height: 1;
   color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.sms-pending-head-toggle b {
+  color: var(--morena-primary);
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 900;
 }
 
 .sms-pending-card {
@@ -1762,6 +1784,16 @@ button {
   align-items: center;
   gap: 8px;
   min-width: 0;
+}
+
+.sms-pending-open {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
 }
 
 .sms-pending-copy {
@@ -1810,23 +1842,21 @@ button {
   font-weight: 900;
 }
 
-.sms-mini-action {
-  min-height: 28px;
-  border: 1px solid var(--morena-border);
+.sms-pending-delete {
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(122, 11, 46, 0.16);
   border-radius: 999px;
   background: #FFFFFF;
-  color: var(--morena-primary);
-  padding: 5px 8px;
-  font-size: 10.8px;
+  color: rgba(122, 11, 46, 0.72);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 16px;
   line-height: 1;
-  font-weight: 800;
+  font-weight: 700;
   cursor: pointer;
-}
-
-.sms-mini-action.primary {
-  background: var(--morena-primary);
-  color: #FFFFFF;
-  border-color: var(--morena-primary);
 }
 
 .sms-chat-card {

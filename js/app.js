@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.41
+Versión: v1.10.2.42
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.41';
+const APP_VERSION = 'v1.10.2.42';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -2367,17 +2367,19 @@ document.querySelectorAll('[data-action="tutorial-ios"]').forEach((el) => {
     });
   });
 
-  document.querySelectorAll('[data-action="chat-contacto"]').forEach((el) => {
-    el.addEventListener('click', function () {
-      abrirChatContacto(el.getAttribute('data-member-id') || '');
-    });
+document.querySelectorAll('[data-action="chat-contacto"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    appState.mensajesBusquedaAbierta = false;
+    abrirChatContacto(el.getAttribute('data-member-id') || '');
   });
+});
 
-  document.querySelectorAll('[data-action="chat-conversacion"]').forEach((el) => {
-    el.addEventListener('click', function () {
-      abrirChatConversacion(el.getAttribute('data-id') || '');
-    });
+document.querySelectorAll('[data-action="chat-conversacion"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    appState.mensajesBusquedaAbierta = false;
+    abrirChatConversacion(el.getAttribute('data-id') || '');
   });
+});
 
   document.querySelectorAll('[data-input="chat-texto"]').forEach((el) => {
     el.addEventListener('input', function () {

@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.27
+Versión: v1.10.2.28
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.27';
+const APP_VERSION = 'v1.10.2.28';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -83,6 +83,7 @@ conversaciones: [],
 conversacionesCargando: false,
 conversacionesError: '',
 contactosBusqueda: '',
+contactosBusquedaTimer: null,
 contactosResultados: [],
 contactosCargando: false,
 contactosError: '',
@@ -1602,7 +1603,7 @@ function normalizarTexto(value) {
 }
 
 /* =========================================================
-   BLOQUE 11. RENDER MENSAJES v1.10.2.25
+   BLOQUE 11. RENDER MENSAJES v1.10.2.28
    ========================================================= */
 
 function renderMensajes() {
@@ -1615,7 +1616,7 @@ function renderMensajes() {
 
         <span class="sms-head-main">
           <strong>Mensajería</strong>
-          <small>${pendientes > 0 ? `${pendientes} mensaje${pendientes === 1 ? '' : 's'} pendiente${pendientes === 1 ? '' : 's'}` : 'Mensajería interna MORENA QRO'}</small>
+          <small>${pendientes > 0 ? `${pendientes} pendiente${pendientes === 1 ? '' : 's'}` : 'Sin mensajes pendientes'}</small>
         </span>
 
         <span class="sms-head-actions">
@@ -1624,8 +1625,7 @@ function renderMensajes() {
         </span>
       </button>
 
-      ${renderMensajesResumen()}
-      ${renderSmsSelectores()}
+      ${renderSmsPendientes()}
       ${renderChat()}
       ${renderBuscarContactos()}
 
@@ -1634,100 +1634,124 @@ function renderMensajes() {
   `;
 }
 
-function renderMensajesResumen() {
-  const pendientesAvisos = appState.avisos.filter((aviso) => aviso.leido !== true).length;
-
-  return `
-    <article class="sms-system-card">
-      <div class="sms-system-head">
-        <div>
-          <strong>Avisos de capacitación</strong>
-          <small>${appState.avisosCanal ? escapeHTML(appState.avisosCanal.descripcion || 'Canal institucional fijo') : 'Canal institucional fijo'}</small>
-        </div>
-
-        <span class="badge ${pendientesAvisos ? 'warn' : 'ok'}">
-          ${pendientesAvisos ? `${pendientesAvisos} nuevo${pendientesAvisos === 1 ? '' : 's'}` : 'Sin pendientes'}
-        </span>
-      </div>
-
-      ${renderAvisosLista()}
-    </article>
-  `;
-}
-
-function renderAvisosLista() {
-  if (appState.avisosCargando) {
-    return `<div class="empty sms-empty">Cargando avisos...</div>`;
-  }
-
-  if (appState.avisosError) {
-    return `<div class="empty sms-empty">${escapeHTML(appState.avisosError)}</div>`;
-  }
-
-  if (!appState.avisos.length) {
-    return `<div class="empty sms-empty">No hay avisos vigentes.</div>`;
-  }
-
-  return `
-    <div class="sms-system-list">
-      ${appState.avisos.slice(0, 3).map((aviso) => `
-        <article class="sms-system-item">
-          <div>
-            <p>${escapeHTML(aviso.asunto || 'Aviso')}</p>
-            <small>${escapeHTML(aviso.codigoControl || 'MSG')} · ${aviso.leido ? 'Leído' : 'Pendiente'}</small>
-            ${aviso.mensaje ? `<span>${escapeHTML(aviso.mensaje)}</span>` : ''}
-          </div>
-
-          <b class="${aviso.leido ? 'ok' : 'warn'}">${aviso.leido ? 'Leído' : 'Nuevo'}</b>
-        </article>
-      `).join('')}
-    </div>
-  `;
-}
-
-function obtenerConversacionesDirectas() {
-  return appState.conversaciones.filter((conv) => {
-    const tipo = String(conv.tipoConversacion || '').toUpperCase();
-    const canalFijo = conv.canalFijo === true || String(conv.canalFijo).toLowerCase() === 'true';
-
-    return tipo !== 'CANAL' && canalFijo !== true;
-  });
-}
-
-function renderSmsSelectores() {
-  const conversaciones = obtenerConversacionesDirectas();
+function renderSmsPendientes() {
   const pendientes = Array.isArray(appState.mensajesPendientes) ? appState.mensajesPendientes : [];
+  const total = Number(appState.mensajesPendientesTotal || 0);
 
   return `
-    <article class="sms-card">
-      <div class="sms-two-columns">
+    <article class="sms-card sms-pending-card">
+      <div class="sms-section-head">
         <div>
-          <label class="sms-label">Contactos</label>
-          <select class="sms-input" data-input="sms-conversacion-select">
-            <option value="">${conversaciones.length ? 'Seleccionar contacto' : 'Sin contactos'}</option>
-            ${conversaciones.map((conv) => `
-              <option value="${escapeHTML(conv.id)}">
-                ${escapeHTML(conv.contacto?.nombreCompleto || conv.nombreCanal || 'Conversación')}
-              </option>
-            `).join('')}
-          </select>
+          <strong>Pendientes</strong>
+          <small>${total > 0 ? `${total} mensaje${total === 1 ? '' : 's'} por revisar` : 'Sin pendientes'}</small>
         </div>
+      </div>
 
-        <div>
-          <label class="sms-label">Pendientes</label>
-          <select class="sms-input" data-input="sms-pendiente-select">
-            <option value="">${pendientes.length ? 'Seleccionar pendiente' : 'Sin mensajes'}</option>
-${pendientes.map((item, index) => `
-  <option value="${escapeHTML(String(index))}">
-    ${escapeHTML(item.nombre || item.contacto?.nombreCompleto || item.remitenteNombre || item.asunto || 'Pendiente')}
-    ${Number(item.count || 0) > 1 ? ` (${Number(item.count)})` : ''}
-  </option>
-`).join('')}
-          </select>
+      ${pendientes.length ? `
+        <div class="sms-pending-list">
+          ${pendientes.map((item, index) => renderSmsPendienteItem(item, index)).join('')}
         </div>
+      ` : `
+        <div class="empty sms-empty">No tienes mensajes pendientes.</div>
+      `}
+    </article>
+  `;
+}
+
+function renderSmsPendienteItem(item, index) {
+  const tipo = obtenerTipoSmsItem(item);
+  const nombre = obtenerNombreSmsItem(item);
+  const count = Number(item.count || 1);
+  const meta = obtenerMetaSmsItem(item);
+
+  return `
+    <article class="sms-pending-item sms-origin-${escapeHTML(tipo)}">
+      <div class="sms-pending-main">
+        ${renderSmsAvatar({ ...item, smsTipoVisible: tipo, nombreCanal: nombre }, 'sms-avatar-pending')}
+
+        <div class="sms-pending-copy">
+          <p>${escapeHTML(nombre)}</p>
+          <small>${escapeHTML(meta)}</small>
+        </div>
+      </div>
+
+      <div class="sms-pending-actions">
+        ${count > 0 ? `<span class="sms-count">${count}</span>` : ''}
+        <button class="sms-mini-action primary" type="button" data-action="sms-pendiente-leer" data-index="${escapeHTML(String(index))}">
+          Leer
+        </button>
+        <button class="sms-mini-action" type="button" data-action="sms-pendiente-eliminar" data-index="${escapeHTML(String(index))}">
+          Eliminar
+        </button>
       </div>
     </article>
   `;
+}
+
+function obtenerTipoSmsItem(item) {
+  const texto = normalizarTexto([
+    item?.nombre,
+    item?.nombreCanal,
+    item?.asunto,
+    item?.tipoConversacion
+  ].filter(Boolean).join(' '));
+
+  const soloLectura = item?.soloLectura === true || String(item?.soloLectura).toLowerCase() === 'true';
+  const canalFijo = item?.canalFijo === true || String(item?.canalFijo).toLowerCase() === 'true';
+
+  if (
+    texto.includes('scria') ||
+    texto.includes('secretaria') ||
+    texto.includes('capacitacion y formacion politica')
+  ) {
+    return 'scria';
+  }
+
+  if (
+    soloLectura ||
+    canalFijo ||
+    texto.includes('aviso') ||
+    texto.includes('sistema')
+  ) {
+    return 'aviso';
+  }
+
+  return 'contacto';
+}
+
+function obtenerNombreSmsItem(item) {
+  const tipo = obtenerTipoSmsItem(item);
+
+  if (tipo === 'aviso') {
+    return 'Avisos';
+  }
+
+  if (tipo === 'scria') {
+    return 'Scria. Capacitación y Formación Política';
+  }
+
+  return (
+    item?.contacto?.nombreCompleto ||
+    item?.remitenteNombre ||
+    item?.nombre ||
+    item?.nombreCanal ||
+    item?.asunto ||
+    'Contacto'
+  );
+}
+
+function obtenerMetaSmsItem(item) {
+  const tipo = obtenerTipoSmsItem(item);
+
+  if (tipo === 'aviso') {
+    return 'Solo lectura';
+  }
+
+  if (tipo === 'scria') {
+    return 'Canal institucional';
+  }
+
+  return item?.contacto?.municipio || item?.municipio || 'Conversación';
 }
 
 async function abrirPendienteMensaje(indexValue) {
@@ -1764,7 +1788,7 @@ async function abrirPendienteMensaje(indexValue) {
 
     appState.chatConversacion = {
       id: conversacionId,
-      nombreCanal: item.nombre || item.asunto || 'Pendiente',
+      nombreCanal: obtenerNombreSmsItem(item),
       tipoConversacion: item.tipoConversacion || '',
       canalFijo: item.canalFijo === true,
       soloLectura: item.soloLectura === true
@@ -1780,31 +1804,83 @@ async function abrirPendienteMensaje(indexValue) {
   }
 }
 
+function ocultarPendienteMensaje(indexValue) {
+  const index = Number(indexValue);
+
+  if (!Array.isArray(appState.mensajesPendientes) || index < 0) {
+    return;
+  }
+
+  appState.mensajesPendientes.splice(index, 1);
+
+  appState.mensajesPendientesTotal = appState.mensajesPendientes.reduce((sum, item) => {
+    return sum + Number(item.count || 1);
+  }, 0);
+
+  renderApp();
+}
+
+function obtenerConversacionesDirectas() {
+  return appState.conversaciones.filter((conv) => {
+    const tipo = String(conv.tipoConversacion || '').toUpperCase();
+    const canalFijo = conv.canalFijo === true || String(conv.canalFijo).toLowerCase() === 'true';
+
+    return tipo !== 'CANAL' && canalFijo !== true;
+  });
+}
+
 function renderBuscarContactos() {
+  const abierta = appState.mensajesBusquedaAbierta;
+  const conversaciones = obtenerConversacionesDirectas();
+
   return `
-    <article class="sms-card">
+    <article class="sms-card sms-contact-card">
       <button class="sms-search-toggle" type="button" data-action="sms-search-toggle">
-        <span>Buscar usuario interno</span>
-        <b>${appState.mensajesBusquedaAbierta ? '▲' : '▼'}</b>
+        <span>Contactos</span>
+        <b>${abierta ? '▲' : '▼'}</b>
       </button>
 
-      ${appState.mensajesBusquedaAbierta ? `
+      ${abierta ? `
         <div class="sms-search-body">
           <input
             class="sms-input"
             type="search"
-            placeholder="Buscar por nombre, alias, código o municipio"
+            placeholder="Buscar contacto"
             value="${escapeHTML(appState.contactosBusqueda)}"
             data-input="contactos-busqueda"
           />
 
-          <button class="btn btn-secondary" type="button" data-action="contactos-buscar">
-            Buscar
-          </button>
-
           ${renderContactosResultados()}
+
+          ${conversaciones.length ? `
+            <div class="sms-contact-subtitle">Conversaciones recientes</div>
+            <div class="sms-contact-list">
+              ${conversaciones.map((conv) => renderConversacionDirectaItem(conv)).join('')}
+            </div>
+          ` : ''}
         </div>
       ` : ''}
+    </article>
+  `;
+}
+
+function renderConversacionDirectaItem(conv) {
+  const nombre = conv.contacto?.nombreCompleto || conv.nombreCanal || 'Conversación';
+
+  return `
+    <article class="sms-contact-item">
+      <div class="sms-contact-main">
+        ${renderSmsAvatar(conv.contacto || conv, 'sms-avatar-mini')}
+
+        <div>
+          <p>${escapeHTML(nombre)}</p>
+          <small>${escapeHTML(conv.contacto?.municipio || conv.tipoConversacion || 'Conversación')}</small>
+        </div>
+      </div>
+
+      <button class="badge ok" type="button" data-action="chat-conversacion" data-id="${escapeHTML(conv.id)}">
+        Abrir
+      </button>
     </article>
   `;
 }
@@ -1820,7 +1896,7 @@ function renderContactosResultados() {
 
   if (!appState.contactosResultados.length) {
     return appState.contactosBusqueda
-      ? `<div class="empty sms-empty">Sin resultados para la búsqueda.</div>`
+      ? `<div class="empty sms-empty">Sin resultados.</div>`
       : `<div class="empty sms-empty">Escribe para buscar contactos.</div>`;
   }
 
@@ -1832,9 +1908,9 @@ function renderContactosResultados() {
             ${renderSmsAvatar(contacto, 'sms-avatar-mini')}
 
             <div>
-              <p>${escapeHTML(contacto.nombreCompleto || 'Contacto')}</p>
+              <p>${escapeHTML(contacto.nombreCompleto || contacto.nombre || 'Contacto')}</p>
               <small>
-                ${escapeHTML(contacto.codigoControl || 'USU')} · ${escapeHTML(contacto.municipio || '')}
+                ${escapeHTML(contacto.codigoControl || 'USU')} ${contacto.municipio ? `· ${escapeHTML(contacto.municipio)}` : ''}
               </small>
             </div>
           </div>
@@ -1850,7 +1926,7 @@ function renderContactosResultados() {
 
 function renderChat() {
   const nombre = appState.chatContacto?.nombreCompleto || appState.chatConversacion?.nombreCanal || 'Chat';
-  const meta = appState.chatContacto?.municipio || appState.chatConversacion?.tipoConversacion || 'Selecciona un contacto';
+  const meta = appState.chatContacto?.municipio || obtenerMetaSmsItem(appState.chatConversacion || {}) || 'Selecciona un contacto';
   const soloLectura = appState.chatConversacion?.soloLectura === true;
 
   return `
@@ -1861,7 +1937,7 @@ function renderChat() {
 
           <div>
             <h3>${escapeHTML(appState.chatConversacion ? nombre : 'Chat')}</h3>
-            <p>${escapeHTML(appState.chatConversacion ? meta : 'Selecciona un contacto para abrir la conversación.')}</p>
+            <p>${escapeHTML(appState.chatConversacion ? meta : 'Selecciona un pendiente o contacto.')}</p>
           </div>
         </div>
       </div>
@@ -1892,7 +1968,7 @@ function renderChat() {
 
 function renderChatMensajes() {
   if (!appState.chatConversacion) {
-    return `<div class="empty sms-empty">Selecciona un contacto para abrir el chat.</div>`;
+    return `<div class="empty sms-empty">Selecciona un pendiente o contacto para abrir el chat.</div>`;
   }
 
   if (appState.chatCargando) {
@@ -1916,8 +1992,25 @@ function renderChatMensajes() {
 }
 
 function renderSmsAvatar(item, extraClass) {
+  const tipo = item?.smsTipoVisible || obtenerTipoSmsItem(item || {});
   const nombre = item?.nombreCompleto || item?.nombreCanal || item?.nombre || 'M';
-  const avatarUrl = item?.avatarUrl || item?.fotoPerfil || item?.foto || '';
+  const avatarUrl = item?.avatarUrl || item?.fotoPerfil || item?.foto || item?.photo || item?.fotoPersonal || '';
+
+  if (tipo === 'aviso') {
+    return `
+      <span class="sms-avatar sms-avatar-aviso ${escapeHTML(extraClass || '')}">
+        A
+      </span>
+    `;
+  }
+
+  if (tipo === 'scria') {
+    return `
+      <span class="sms-avatar sms-avatar-scria ${escapeHTML(extraClass || '')}">
+        CF
+      </span>
+    `;
+  }
 
   return `
     <span class="sms-avatar ${escapeHTML(extraClass || '')}">
@@ -2058,12 +2151,14 @@ document.querySelectorAll('[data-action="tutorial-ios"]').forEach((el) => {
   document.querySelectorAll('[data-input="contactos-busqueda"]').forEach((el) => {
     el.addEventListener('input', function () {
       appState.contactosBusqueda = el.value || '';
-    });
-  });
 
-  document.querySelectorAll('[data-action="contactos-buscar"]').forEach((el) => {
-    el.addEventListener('click', function () {
-      buscarContactosPwa();
+      if (appState.contactosBusquedaTimer) {
+        window.clearTimeout(appState.contactosBusquedaTimer);
+      }
+
+      appState.contactosBusquedaTimer = window.setTimeout(function () {
+        buscarContactosPwa();
+      }, 350);
     });
   });
 
@@ -2074,23 +2169,15 @@ document.querySelectorAll('[data-action="tutorial-ios"]').forEach((el) => {
     });
   });
 
-  document.querySelectorAll('[data-input="sms-conversacion-select"]').forEach((el) => {
-    el.addEventListener('change', function () {
-      const conversacionId = el.value || '';
-
-      if (conversacionId) {
-        abrirChatConversacion(conversacionId);
-      }
+     document.querySelectorAll('[data-action="sms-pendiente-leer"]').forEach((el) => {
+    el.addEventListener('click', function () {
+      abrirPendienteMensaje(el.getAttribute('data-index') || '');
     });
   });
 
-  document.querySelectorAll('[data-input="sms-pendiente-select"]').forEach((el) => {
-    el.addEventListener('change', function () {
-      const index = el.value || '';
-
-      if (index !== '') {
-        abrirPendienteMensaje(index);
-      }
+  document.querySelectorAll('[data-action="sms-pendiente-eliminar"]').forEach((el) => {
+    el.addEventListener('click', function () {
+      ocultarPendienteMensaje(el.getAttribute('data-index') || '');
     });
   });
 

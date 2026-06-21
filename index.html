@@ -1,7 +1,7 @@
 <!--
 MORENA QRO Capacitación
 Archivo: index.html
-Versión: v1.10.2.19
+Versión: v1.10.2.21
 Alcance: estructura raíz de la PWA usuario
 -->
 
@@ -21,7 +21,7 @@ Alcance: estructura raíz de la PWA usuario
   <meta name="description" content="Aplicación de capacitación MORENA Querétaro." />
 
   <link rel="manifest" href="./manifest.webmanifest" />
-<link rel="stylesheet" href="./css/styles.css?v=110219" />
+<link rel="stylesheet" href="./css/styles.css?v=110221" />
 </head>
 
 <body>
@@ -29,13 +29,36 @@ Alcance: estructura raíz de la PWA usuario
        BLOQUE 02. CONTENEDOR RAÍZ
        ===================================================== -->
 
-  <div id="appRoot"></div>
+<div class="mor-splash" id="morSplashScreen" aria-hidden="true">
+  <div class="mor-splash-card">
+    <div class="mor-splash-logo">
+      <img src="./assets/icon-mor-512.png" alt="MORENA QRO Capacitación" />
+    </div>
+
+    <div class="mor-splash-powered">
+      <span>Powered by</span>
+      <img src="./assets/icon-192.png" alt="SCaD" />
+    </div>
+  </div>
+</div>
+
+<div id="appRoot"></div>
 
 <!-- =====================================================
      BLOQUE 03. CARGA DE JS
      ===================================================== -->
 
-<script src="./js/app.js?v=110219"></script>
+<script src="./js/app.js?v=110221"></script>
+
+  <script>
+  window.setTimeout(function () {
+    const splash = document.getElementById('morSplashScreen');
+
+    if (splash) {
+      splash.classList.add('hide');
+    }
+  }, 3000);
+</script>
 
   <!-- =====================================================
        BLOQUE 04. REGISTRO SERVICE WORKER

@@ -1696,9 +1696,9 @@ function renderMensajes() {
         ` : ''}
       </div>
 
-      ${renderSmsPendientes()}
-      ${renderChat()}
-      ${renderBuscarContactos()}
+${renderSmsPendientes()}
+${renderBuscarContactos()}
+${renderChat()}
 
       ${renderBackButton()}
     </section>

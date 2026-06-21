@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.43
+Versión: v1.10.2.44
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.43';
+const APP_VERSION = 'v1.10.2.44';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -550,6 +550,56 @@ async function eliminarContactoRegular(contactMemberId) {
   } catch (error) {
     console.error('Error al quitar contacto regular:', error);
     appState.contactosRegularesError = 'Error de conexión.';
+
+  } finally {
+    appState.contactoAccionEnCurso = false;
+    renderApp();
+  }
+}
+
+async function actualizarAliasContactoRegular(contactMemberId) {
+  const memberId = appState.usuario.memberId || '';
+
+  if (!memberId || !contactMemberId || appState.contactoAccionEnCurso) return;
+
+  const contacto = appState.contactosRegulares.find((item) => {
+    return obtenerContactIdDesdeContacto(item) === contactMemberId;
+  });
+
+  const aliasActual = contacto?.contactAlias || '';
+
+  const nuevoAlias = window.prompt(
+    'Alias para este contacto. Deja vacío para quitar alias.',
+    aliasActual
+  );
+
+  if (nuevoAlias === null) return;
+
+  try {
+    appState.contactoAccionEnCurso = true;
+    renderApp();
+
+    const response = await fetch(MOR_API_CONTACTO_ALIAS, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        memberId,
+        contactMemberId,
+        contactAlias: nuevoAlias.trim()
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.ok) {
+      appState.contactosRegularesError = data.mensaje || 'No fue posible guardar el alias.';
+    }
+
+    await cargarContactosRegularesPwa(memberId);
+
+  } catch (error) {
+    console.error('Error al actualizar alias:', error);
+    appState.contactosRegularesError = 'Error de conexión al guardar alias.';
 
   } finally {
     appState.contactoAccionEnCurso = false;
@@ -2099,6 +2149,7 @@ function renderContactoRegularItem(contacto) {
   const contactMemberId = obtenerContactIdDesdeContacto(contacto);
   const nombre = obtenerNombreContactoRegular(contacto);
   const meta = obtenerMetaContactoRegular(contacto);
+  const tieneAlias = Boolean(contacto.contactAlias);
 
   return `
     <article class="sms-contact-item sms-contact-regular-item">
@@ -2113,15 +2164,27 @@ function renderContactoRegularItem(contacto) {
         </div>
       </button>
 
-      <button
-        class="sms-contact-remove"
-        type="button"
-        data-action="contacto-regular-eliminar"
-        data-member-id="${escapeHTML(contactMemberId)}"
-        aria-label="Quitar contacto regular"
-      >
-        ×
-      </button>
+      <div class="sms-contact-actions">
+        <button
+          class="sms-contact-alias ${tieneAlias ? 'active' : ''}"
+          type="button"
+          data-action="contacto-regular-alias"
+          data-member-id="${escapeHTML(contactMemberId)}"
+          aria-label="Editar alias"
+        >
+          ✎
+        </button>
+
+        <button
+          class="sms-contact-remove"
+          type="button"
+          data-action="contacto-regular-eliminar"
+          data-member-id="${escapeHTML(contactMemberId)}"
+          aria-label="Quitar contacto regular"
+        >
+          ×
+        </button>
+      </div>
     </article>
   `;
 }
@@ -2580,9 +2643,15 @@ document.querySelectorAll('[data-action="chat-contacto"]').forEach((el) => {
   });
 });
 
-   document.querySelectorAll('[data-action="contacto-regular-agregar"]').forEach((el) => {
+document.querySelectorAll('[data-action="contacto-regular-agregar"]').forEach((el) => {
   el.addEventListener('click', function () {
     agregarContactoRegular(el.getAttribute('data-member-id') || '');
+  });
+});
+
+document.querySelectorAll('[data-action="contacto-regular-alias"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    actualizarAliasContactoRegular(el.getAttribute('data-member-id') || '');
   });
 });
 

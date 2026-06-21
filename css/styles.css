@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: css/styles.css
-Versión: v1.10.2.21
+Versión: v1.10.2.23
 Alcance: estilos base de la PWA usuario
 */
 
@@ -331,22 +331,23 @@ body {
 
 .nav-row {
   display: grid;
-  grid-template-columns: 34px 1fr auto auto;
+  grid-template-columns: 42px 1fr auto auto;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
 }
 
 .nav-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  background: var(--morena-soft);
-  color: var(--morena-primary);
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: transparent;
+  color: var(--morena-primary);
+  border-radius: 0;
   font-weight: 850;
-  font-size: 12px;
+  font-size: 25px;
+  line-height: 1;
   margin-bottom: 0;
 }
 
@@ -380,8 +381,9 @@ body {
 }
 
 .adm-row .nav-icon {
-  background: var(--morena-primary);
-  color: #FFFFFF;
+  background: transparent;
+  color: var(--morena-primary);
+  font-size: 25px;
 }
 
 /* =========================================================

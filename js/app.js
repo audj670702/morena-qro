@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.37
+Versión: v1.10.2.38
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.37';
+const APP_VERSION = 'v1.10.2.38';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -96,6 +96,7 @@ chatError: '',
 chatTexto: '',
 mensajesBusquedaAbierta: false,
 mensajesPendientesAbierto: true,
+contactosModo: 'regulares',
 mensajesSyncTimer: null,
 mensajesSyncEnCurso: false,
 instalacion: {
@@ -1900,35 +1901,79 @@ function obtenerConversacionesDirectas() {
 function renderBuscarContactos() {
   const abierta = appState.mensajesBusquedaAbierta;
   const conversaciones = obtenerConversacionesDirectas();
+  const modo = appState.contactosModo || 'regulares';
+  const totalRegulares = conversaciones.length;
 
   return `
     <article class="sms-card sms-contact-card">
-      <button class="sms-search-toggle" type="button" data-action="sms-search-toggle">
-        <span>Contactos</span>
-        <b>${abierta ? '▲' : '▼'}</b>
+      <button class="sms-contact-head-toggle" type="button" data-action="sms-search-toggle">
+        <strong>Contactos</strong>
+
+        <span>
+          ${totalRegulares > 0 ? `<small>${totalRegulares} regulares</small>` : ''}
+          <b>${abierta ? '▾' : '▸'}</b>
+        </span>
       </button>
 
       ${abierta ? `
-        <div class="sms-search-body">
-          <input
-            class="sms-input"
-            type="search"
-            placeholder="Buscar contacto"
-            value="${escapeHTML(appState.contactosBusqueda)}"
-            data-input="contactos-busqueda"
-          />
+        <div class="sms-contact-body">
+          <div class="sms-contact-tabs">
+            <button
+              class="${modo === 'regulares' ? 'active' : ''}"
+              type="button"
+              data-action="sms-contactos-modo"
+              data-modo="regulares"
+            >
+              Contactos regulares
+            </button>
 
-          ${renderContactosResultados()}
+            <button
+              class="${modo === 'buscar' ? 'active' : ''}"
+              type="button"
+              data-action="sms-contactos-modo"
+              data-modo="buscar"
+            >
+              Buscar
+            </button>
+          </div>
 
-          ${conversaciones.length ? `
-            <div class="sms-contact-subtitle">Conversaciones recientes</div>
-            <div class="sms-contact-list">
-              ${conversaciones.map((conv) => renderConversacionDirectaItem(conv)).join('')}
-            </div>
-          ` : ''}
+          ${modo === 'buscar'
+            ? renderContactosBusquedaPanel()
+            : renderContactosRegularesPanel(conversaciones)
+          }
         </div>
       ` : ''}
     </article>
+  `;
+}
+
+function renderContactosRegularesPanel(conversaciones) {
+  if (!conversaciones.length) {
+    return `<div class="empty sms-empty">Sin contactos regulares.</div>`;
+  }
+
+  return `
+    <div class="sms-contact-list">
+      ${conversaciones.map((conv) => renderConversacionDirectaItem(conv)).join('')}
+    </div>
+  `;
+}
+
+function renderContactosBusquedaPanel() {
+  return `
+    <div class="sms-contact-search">
+      <label class="sms-search-field">
+        <span>🔍</span>
+        <input
+          type="search"
+          placeholder="Buscar por nombre, correo o alias"
+          value="${escapeHTML(appState.contactosBusqueda)}"
+          data-input="contactos-busqueda"
+        />
+      </label>
+
+      ${renderContactosResultados()}
+    </div>
   `;
 }
 
@@ -1936,7 +1981,7 @@ function renderConversacionDirectaItem(conv) {
   const nombre = conv.contacto?.nombreCompleto || conv.nombreCanal || 'Conversación';
 
   return `
-    <article class="sms-contact-item">
+    <button class="sms-contact-item sms-contact-open" type="button" data-action="chat-conversacion" data-id="${escapeHTML(conv.id)}">
       <div class="sms-contact-main">
         ${renderSmsAvatar(conv.contacto || conv, 'sms-avatar-mini')}
 
@@ -1945,15 +1990,15 @@ function renderConversacionDirectaItem(conv) {
           <small>${escapeHTML(conv.contacto?.municipio || conv.tipoConversacion || 'Conversación')}</small>
         </div>
       </div>
-
-      <button class="badge ok" type="button" data-action="chat-conversacion" data-id="${escapeHTML(conv.id)}">
-        Abrir
-      </button>
-    </article>
+    </button>
   `;
 }
 
 function renderContactosResultados() {
+  if (!appState.contactosBusqueda) {
+    return '';
+  }
+
   if (appState.contactosCargando) {
     return `<div class="empty sms-empty">Buscando contactos...</div>`;
   }
@@ -1963,30 +2008,25 @@ function renderContactosResultados() {
   }
 
   if (!appState.contactosResultados.length) {
-    return appState.contactosBusqueda
-      ? `<div class="empty sms-empty">Sin resultados.</div>`
-      : `<div class="empty sms-empty">Escribe para buscar contactos.</div>`;
+    return `<div class="empty sms-empty">Sin resultados.</div>`;
   }
 
   return `
     <div class="sms-contact-list">
       ${appState.contactosResultados.map((contacto) => `
-        <article class="sms-contact-item">
+        <button class="sms-contact-item sms-contact-open" type="button" data-action="chat-contacto" data-member-id="${escapeHTML(contacto.memberId)}">
           <div class="sms-contact-main">
             ${renderSmsAvatar(contacto, 'sms-avatar-mini')}
 
             <div>
               <p>${escapeHTML(contacto.nombreCompleto || contacto.nombre || 'Contacto')}</p>
               <small>
-                ${escapeHTML(contacto.codigoControl || 'USU')} ${contacto.municipio ? `· ${escapeHTML(contacto.municipio)}` : ''}
+                ${escapeHTML(contacto.email || contacto.correo || contacto.codigoControl || 'USU')}
+                ${contacto.municipio ? ` · ${escapeHTML(contacto.municipio)}` : ''}
               </small>
             </div>
           </div>
-
-          <button class="badge ok" type="button" data-action="chat-contacto" data-member-id="${escapeHTML(contacto.memberId)}">
-            Mensaje
-          </button>
-        </article>
+        </button>
       `).join('')}
     </div>
   `;
@@ -2320,6 +2360,13 @@ document.querySelectorAll('[data-action="tutorial-ios"]').forEach((el) => {
       renderApp();
     });
   });
+
+   document.querySelectorAll('[data-action="sms-contactos-modo"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    appState.contactosModo = el.getAttribute('data-modo') || 'regulares';
+    renderApp();
+  });
+});
 
    document.querySelectorAll('[data-action="sms-pendientes-toggle"]').forEach((el) => {
   el.addEventListener('click', function () {

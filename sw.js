@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morena-qro-v1-10-2-28';
+const CACHE_NAME = 'morena-qro-v1-10-2-29';
 
 const APP_FILES = [
   './',

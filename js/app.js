@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.32
+Versión: v1.10.2.33
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.32';
+const APP_VERSION = 'v1.10.2.33';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -1682,19 +1682,16 @@ function renderMensajes() {
 
   return `
     <section class="sms-screen">
-      <button class="sms-head-card" type="button" data-action="refresh">
-        <span class="sms-head-icon">💬</span>
+      <div class="sms-title-bar">
+        <div class="sms-title-main">
+          <span class="sms-title-icon">💬</span>
+          <h2>Mensajería</h2>
+        </div>
 
-        <span class="sms-head-main">
-          <strong>Mensajería</strong>
-          <small>${pendientes > 0 ? `${pendientes} pendiente${pendientes === 1 ? '' : 's'}` : 'Sin mensajes pendientes'}</small>
-        </span>
-
-        <span class="sms-head-actions">
-          ${pendientes > 0 ? `<span class="sms-badge flash">${pendientes}</span>` : ''}
-          <span class="sms-refresh">↻</span>
-        </span>
-      </button>
+        ${pendientes > 0 ? `
+          <span class="sms-pending-alert">${pendientes}</span>
+        ` : ''}
+      </div>
 
       ${renderSmsPendientes()}
       ${renderChat()}

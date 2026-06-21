@@ -1,11 +1,11 @@
-const CACHE_NAME = 'morena-qro-v1-10-2-24';
+const CACHE_NAME = 'morena-qro-v1-10-2-26';
 
 const APP_FILES = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './css/styles.css',
-  './js/app.js',
+  './css/styles.css?v=110226',
+  './js/app.js?v=110226',
   './assets/icon-mor-192.png',
   './assets/icon-mor-512.png',
   './assets/Logo_Mor.png',
@@ -42,8 +42,16 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request);
-    })
+    fetch(event.request)
+      .then((response) => {
+        const responseClone = response.clone();
+
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseClone);
+        });
+
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });

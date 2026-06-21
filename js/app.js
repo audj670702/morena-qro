@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.19
+Versión: v1.10.2.21
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.19';
+const APP_VERSION = 'v1.10.2.21';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -26,7 +26,7 @@ const MOR_ACCESS_URL = 'https://www.scad.mx/mor-acceso';
 const APP_LOGO_URL = './assets/Logo_Mor.png';
 const SCAD_LOGO_URL = './assets/icon-192.png';
 const MORENA_FACEBOOK_URL = 'https://www.facebook.com/share/1A7utqCu8i/';
-const IOS_TUTORIAL_URL = './iphone-install.mp4';
+const IOS_TUTORIAL_URL = './assets/iphone-install.mp4';
 
 const USER_AGENT = navigator.userAgent || '';
 const IS_IOS = /iPad|iPhone|iPod/.test(USER_AGENT) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);

@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.30
+Versión: v1.10.2.31
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.30';
+const APP_VERSION = 'v1.10.2.31';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -91,9 +91,12 @@ chatConversacion: null,
 chatContacto: null,
 chatMensajes: [],
 chatCargando: false,
+chatEnviando: false,
 chatError: '',
 chatTexto: '',
 mensajesBusquedaAbierta: false,
+mensajesSyncTimer: null,
+mensajesSyncEnCurso: false,
 instalacion: {
   estado: 'web',
   instalable: false,
@@ -490,15 +493,18 @@ async function abrirChatConversacion(conversacionId) {
   await cargarChatMensajes(conversacionId);
 }
 
-async function cargarChatMensajes(conversacionId) {
+async function cargarChatMensajes(conversacionId, opciones = {}) {
   const memberId = appState.usuario.memberId || '';
+  const silencioso = opciones.silencioso === true;
 
   if (!memberId || !conversacionId) return;
 
   try {
-    appState.chatCargando = true;
-    appState.chatError = '';
-    renderApp();
+    if (!silencioso) {
+      appState.chatCargando = true;
+      appState.chatError = '';
+      renderApp();
+    }
 
     const url = `${MOR_API_CONVERSACION_MENSAJES}?memberId=${encodeURIComponent(memberId)}&conversacionId=${encodeURIComponent(conversacionId)}`;
     const response = await fetch(url);
@@ -509,6 +515,7 @@ async function cargarChatMensajes(conversacionId) {
     appState.chatCargando = false;
 
     await cargarPendientesMensajesPwa(memberId);
+
     renderApp();
 
   } catch (error) {
@@ -526,9 +533,13 @@ async function enviarMensajeChat() {
   const conversacionId = appState.chatConversacion?.id || '';
   const mensaje = appState.chatTexto.trim();
 
-  if (!memberId || !contactoMemberId || !mensaje) return;
+  if (!memberId || !contactoMemberId || !mensaje || appState.chatEnviando) return;
 
   try {
+    appState.chatEnviando = true;
+    appState.chatError = '';
+    renderApp();
+
     const response = await fetch(MOR_API_MENSAJE_ENVIAR, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -539,17 +550,23 @@ async function enviarMensajeChat() {
 
     if (!data.ok) {
       appState.chatError = data.mensaje || 'No fue posible enviar el mensaje.';
+      appState.chatEnviando = false;
       renderApp();
       return;
     }
 
     appState.chatTexto = '';
-    await cargarChatMensajes(conversacionId);
+
+    await cargarChatMensajes(conversacionId, { silencioso: true });
     await cargarConversacionesPwa(memberId);
+
+    appState.chatEnviando = false;
+    renderApp();
 
   } catch (error) {
     console.error('Error al enviar mensaje:', error);
     appState.chatError = 'Error de conexión.';
+    appState.chatEnviando = false;
     renderApp();
   }
 }
@@ -565,7 +582,61 @@ function escapeHTML(value) {
 
 function setVista(vista) {
   appState.vistaActual = vista;
+
+  if (vista === 'mensajes') {
+    iniciarSincronizacionMensajes();
+  } else {
+    detenerSincronizacionMensajes();
+  }
+
   renderApp();
+}
+
+function iniciarSincronizacionMensajes() {
+  detenerSincronizacionMensajes();
+
+  appState.mensajesSyncTimer = window.setInterval(function () {
+    sincronizarMensajesPwa();
+  }, 12000);
+}
+
+function detenerSincronizacionMensajes() {
+  if (appState.mensajesSyncTimer) {
+    window.clearInterval(appState.mensajesSyncTimer);
+    appState.mensajesSyncTimer = null;
+  }
+
+  appState.mensajesSyncEnCurso = false;
+}
+
+async function sincronizarMensajesPwa() {
+  const memberId = appState.usuario.memberId || '';
+
+  if (!memberId || appState.vistaActual !== 'mensajes') {
+    detenerSincronizacionMensajes();
+    return;
+  }
+
+  if (appState.mensajesSyncEnCurso) return;
+
+  try {
+    appState.mensajesSyncEnCurso = true;
+
+    const conversacionId = appState.chatConversacion?.id || '';
+
+    if (conversacionId) {
+      await cargarChatMensajes(conversacionId, { silencioso: true });
+      await cargarConversacionesPwa(memberId);
+    } else {
+      await cargarPendientesMensajesPwa(memberId);
+      await cargarConversacionesPwa(memberId);
+    }
+
+  } catch (error) {
+    console.error('Error al sincronizar mensajes:', error);
+  } finally {
+    appState.mensajesSyncEnCurso = false;
+  }
 }
 
 async function actualizarDatosPwa() {
@@ -1957,9 +2028,14 @@ function renderChat() {
             data-input="chat-texto"
           >${escapeHTML(appState.chatTexto)}</textarea>
 
-          <button class="btn btn-primary" type="button" data-action="chat-enviar">
-            Enviar
-          </button>
+<button
+  class="btn btn-primary"
+  type="button"
+  data-action="chat-enviar"
+  ${appState.chatEnviando ? 'disabled' : ''}
+>
+  ${appState.chatEnviando ? 'Enviando...' : 'Enviar'}
+</button>
         </div>
       ` : ''}
     </article>

@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.46
+Versión: v1.10.2.47
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.46';
+const APP_VERSION = 'v1.10.2.47';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -27,6 +27,7 @@ const MOR_API_MENSAJE_ENVIAR = 'https://www.scad.mx/_functions/morMensajeEnviar'
 const MOR_PANEL_ADM_URL = 'https://www.scad.mx/mor-panel-adm';
 const MOR_MIS_ACTIVIDADES_URL = 'https://www.scad.mx/mor-mis-actividades';
 const MOR_ACCESS_URL = 'https://www.scad.mx/mor-acceso';
+const MOR_PROFILE_EDIT_URL = 'https://www.scad.mx/mor-registro-perfil';
 const APP_LOGO_URL = './assets/Logo_Mor.png';
 const SCAD_LOGO_URL = './assets/icon-192.png';
 const MORENA_FACEBOOK_URL = 'https://www.facebook.com/share/1A7utqCu8i/';
@@ -2478,6 +2479,10 @@ function renderPerfil() {
         <p class="info-meta">Código: ${escapeHTML(appState.usuario.codigo)}</p>
         <p class="info-meta">Rol: ${escapeHTML(appState.usuario.rol)}</p>
         <p class="info-meta">Municipio: ${escapeHTML(appState.usuario.municipio)}</p>
+
+        <button class="btn btn-primary profile-edit-btn" type="button" data-action="editar-perfil">
+          Editar perfil
+        </button>
       </article>
 
       ${renderBackButton()}
@@ -2711,6 +2716,12 @@ document.querySelectorAll('[data-action="facebook-abrir"]').forEach((el) => {
     });
   });
 
+document.querySelectorAll('[data-action="editar-perfil"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    abrirEditarPerfil();
+  });
+});
+   
   document.querySelectorAll('[data-action="logout-lite"]').forEach((el) => {
     el.addEventListener('click', function () {
       cerrarSesionLocal();
@@ -2757,6 +2768,15 @@ function abrirFacebookInicio() {
   if (!url) {
     return;
   }
+
+  window.location.href = url;
+}
+
+function abrirEditarPerfil() {
+  const memberId = appState.usuario.memberId || obtenerParametroURL('memberId');
+  const url = memberId
+    ? `${MOR_PROFILE_EDIT_URL}?memberId=${encodeURIComponent(memberId)}`
+    : MOR_PROFILE_EDIT_URL;
 
   window.location.href = url;
 }

@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.20
+Versión: v1.10.2.19
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.20';
+const APP_VERSION = 'v1.10.2.19';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -25,10 +25,8 @@ const MOR_MIS_ACTIVIDADES_URL = 'https://www.scad.mx/mor-mis-actividades';
 const MOR_ACCESS_URL = 'https://www.scad.mx/mor-acceso';
 const APP_LOGO_URL = './assets/Logo_Mor.png';
 const SCAD_LOGO_URL = './assets/icon-192.png';
-const SPLASH_LOGO_URL = './assets/icon-mor-512.png';
-const SPLASH_DURATION_MS = 3000;
 const MORENA_FACEBOOK_URL = 'https://www.facebook.com/share/1A7utqCu8i/';
-const IOS_TUTORIAL_URL = './assets/iphone-install.mp4';
+const IOS_TUTORIAL_URL = './iphone-install.mp4';
 
 const USER_AGENT = navigator.userAgent || '';
 const IS_IOS = /iPad|iPhone|iPod/.test(USER_AGENT) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -50,8 +48,7 @@ const APP_CONFIG = {
 
 const appState = {
   vistaActual: 'inicio',
-   splashActivo: true,
-   usuario: {
+usuario: {
     nombre: 'Usuario MORENA',
     alias: '',
     codigo: 'USU-0000',
@@ -745,37 +742,17 @@ function renderApp() {
     return;
   }
 
-root.innerHTML = `
-  ${renderSplash()}
-  <main class="app ${appState.splashActivo ? 'app-loading' : ''}">
-    ${renderHeader()}
-    <section class="app-body">
-      ${renderVista()}
-    </section>
-    ${renderPoweredFooter()}
-  </main>
-`;
+  root.innerHTML = `
+    <main class="app">
+      ${renderHeader()}
+      <section class="app-body">
+        ${renderVista()}
+      </section>
+      ${renderPoweredFooter()}
+    </main>
+  `;
 
   bindEventos();
-}
-
-function renderSplash() {
-  if (!appState.splashActivo) {
-    return '';
-  }
-
-  return `
-    <section class="app-splash" aria-label="Pantalla de arranque">
-      <div class="splash-content">
-        <img class="splash-logo" src="${escapeHTML(SPLASH_LOGO_URL)}" alt="MORENA QRO Capacitación" />
-
-        <div class="splash-powered">
-          <span>Powered by</span>
-          <img src="${escapeHTML(SCAD_LOGO_URL)}" alt="SCaD" />
-        </div>
-      </div>
-    </section>
-  `;
 }
 
 function renderHeader() {
@@ -2059,13 +2036,6 @@ function cerrarSesionLocal() {
    BLOQUE 14. INICIALIZACIÓN
    ========================================================= */
 
-function iniciarSplash() {
-  window.setTimeout(function () {
-    appState.splashActivo = false;
-    renderApp();
-  }, SPLASH_DURATION_MS);
-}
-
 async function inicializarApp() {
   const memberId = obtenerParametroURL('memberId');
 
@@ -2074,9 +2044,8 @@ async function inicializarApp() {
     appState.usuario.codigo = 'Sesión recibida';
   }
 
-renderApp();
-iniciarSplash();
-configurarInstalacionPwa();
+  renderApp();
+   configurarInstalacionPwa();
 
 if (memberId) {
 await cargarUsuarioPwa(memberId);

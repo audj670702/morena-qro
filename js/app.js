@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.31
+Versión: v1.10.2.32
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.31';
+const APP_VERSION = 'v1.10.2.32';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -2055,16 +2055,95 @@ function renderChatMensajes() {
     return `<div class="empty sms-empty">Sin mensajes todavía.</div>`;
   }
 
-  return appState.chatMensajes.map((msg) => `
-    <div class="sms-message-row ${msg.mio ? 'mine' : 'theirs'}">
-      ${msg.mio ? '' : renderSmsAvatar({ nombreCompleto: msg.enviadoPorNombre || msg.remitenteNombre || '' }, 'sms-avatar-msg')}
+  let html = '';
+  let ultimoGrupoFecha = '';
 
-      <div class="sms-bubble ${msg.mio ? 'mine' : 'theirs'}">
-        <p>${escapeHTML(msg.mensaje)}</p>
-        <span>${escapeHTML(msg.enviadoPorNombre || msg.remitenteNombre || '')}</span>
+  appState.chatMensajes.forEach((msg) => {
+    const fechaGrupo = obtenerClaveFechaMensaje(msg);
+    const etiquetaGrupo = obtenerEtiquetaFechaMensaje(msg);
+
+    if (fechaGrupo !== ultimoGrupoFecha) {
+      html += `
+        <div class="sms-date-divider">
+          <span>${escapeHTML(etiquetaGrupo)}</span>
+        </div>
+      `;
+      ultimoGrupoFecha = fechaGrupo;
+    }
+
+    html += `
+      <div class="sms-message-row ${msg.mio ? 'mine' : 'theirs'}">
+        <div class="sms-bubble ${msg.mio ? 'mine' : 'theirs'}">
+          <p>${escapeHTML(msg.mensaje || '')}</p>
+          <span>${escapeHTML(obtenerHoraMensaje(msg))}</span>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  });
+
+  return html;
+}
+
+function obtenerFechaMensajeValor(msg) {
+  return (
+    msg.fechaEnvio ||
+    msg.fechaPublicacion ||
+    msg._createdDate ||
+    msg.fecha ||
+    msg.createdAt ||
+    ''
+  );
+}
+
+function obtenerClaveFechaMensaje(msg) {
+  const valor = obtenerFechaMensajeValor(msg);
+
+  if (!valor) return 'sin-fecha';
+
+  const fecha = new Date(valor);
+
+  if (Number.isNaN(fecha.getTime())) return 'sin-fecha';
+
+  return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
+}
+
+function obtenerEtiquetaFechaMensaje(msg) {
+  const valor = obtenerFechaMensajeValor(msg);
+
+  if (!valor) return 'Sin fecha';
+
+  const fecha = new Date(valor);
+
+  if (Number.isNaN(fecha.getTime())) return 'Sin fecha';
+
+  const hoy = new Date();
+  const hoyClave = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+  const fechaClave = obtenerClaveFechaMensaje(msg);
+
+  if (fechaClave === hoyClave) {
+    return 'Hoy';
+  }
+
+  return fecha.toLocaleDateString('es-MX', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+}
+
+function obtenerHoraMensaje(msg) {
+  const valor = obtenerFechaMensajeValor(msg);
+
+  if (!valor) return '';
+
+  const fecha = new Date(valor);
+
+  if (Number.isNaN(fecha.getTime())) return '';
+
+  return fecha.toLocaleTimeString('es-MX', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 }
 
 function renderSmsAvatar(item, extraClass) {

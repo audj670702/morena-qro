@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: css/styles.css
-Versión: v1.10.2.36
+Versión: v1.10.2.37
 Alcance: estilos base de la PWA usuario
 */
 
@@ -1701,8 +1701,10 @@ button {
 }
 
 .sms-pending-head-toggle {
+  appearance: none;
+  -webkit-appearance: none;
   width: 100%;
-  min-height: 30px;
+  min-height: 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1711,12 +1713,16 @@ button {
   background: transparent;
   color: var(--text-main);
   padding: 0;
-  margin-bottom: 6px;
+  margin: 0 0 6px;
   cursor: pointer;
   text-align: left;
+  box-shadow: none;
+  outline: none;
 }
 
 .sms-pending-head-toggle strong {
+  display: block;
+  margin: 0;
   font-size: 13.4px;
   line-height: 1.1;
   font-weight: 850;
@@ -1726,11 +1732,13 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 7px;
+  gap: 6px;
   min-width: 0;
 }
 
 .sms-pending-head-toggle small {
+  display: block;
+  margin: 0;
   font-size: 10.7px;
   line-height: 1;
   color: var(--text-muted);
@@ -1739,8 +1747,11 @@ button {
 }
 
 .sms-pending-head-toggle b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--morena-primary);
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1;
   font-weight: 900;
 }
@@ -1787,17 +1798,28 @@ button {
 }
 
 .sms-pending-open {
+  appearance: none;
+  -webkit-appearance: none;
   width: 100%;
+  min-width: 0;
   border: 0;
   background: transparent;
   color: inherit;
   padding: 0;
+  margin: 0;
   text-align: left;
   cursor: pointer;
+  box-shadow: none;
+  outline: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .sms-pending-copy {
+  display: block;
   min-width: 0;
+  text-align: left;
 }
 
 .sms-pending-copy p {
@@ -1843,6 +1865,8 @@ button {
 }
 
 .sms-pending-delete {
+  appearance: none;
+  -webkit-appearance: none;
   width: 24px;
   height: 24px;
   border: 1px solid rgba(122, 11, 46, 0.16);
@@ -1853,10 +1877,13 @@ button {
   align-items: center;
   justify-content: center;
   padding: 0;
+  margin: 0;
   font-size: 16px;
   line-height: 1;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: none;
+  outline: none;
 }
 
 .sms-chat-card {

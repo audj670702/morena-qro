@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: css/styles.css
-Versión: v1.10.2.28
+Versión: v1.10.2.29
 Alcance: estilos base de la PWA usuario
 */
 
@@ -1526,7 +1526,7 @@ body {
 }
 
 /* =========================================================
-   BLOQUE MENSAJES / CHAT v1.10.2.28
+   BLOQUE MENSAJES / CHAT v1.10.2.29
    ========================================================= */
 
 .sms-screen {
@@ -1627,10 +1627,11 @@ body {
 }
 
 .sms-card {
-  border: 1px solid var(--morena-border);
-  background: #FFFFFF;
-  border-radius: 16px;
-  padding: 10px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
   margin-bottom: 0;
 }
 
@@ -1657,6 +1658,11 @@ body {
   color: var(--text-muted);
 }
 
+.sms-pending-card {
+  border-bottom: 1px solid rgba(122, 11, 46, 0.12);
+  padding-bottom: 8px;
+}
+
 .sms-pending-list {
   display: grid;
   gap: 7px;
@@ -1667,11 +1673,11 @@ body {
   grid-template-columns: 1fr auto;
   gap: 8px;
   align-items: center;
-  border: 1px solid rgba(122, 11, 46, 0.12);
+  border: 0;
   border-left: 5px solid rgba(117, 97, 106, 0.34);
-  border-radius: 15px;
+  border-radius: 13px;
   background: #FFFFFF;
-  padding: 8px;
+  padding: 7px 8px;
 }
 
 .sms-origin-aviso {
@@ -1759,7 +1765,7 @@ body {
 }
 
 .sms-chat-card {
-  padding: 10px;
+  padding: 0;
 }
 
 .sms-chat-header {
@@ -1846,13 +1852,14 @@ body {
 }
 
 .sms-chat-box {
+  width: 100%;
   min-height: 300px;
   max-height: 370px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 7px;
-  padding: 9px;
+  padding: 8px;
   border: 1px solid rgba(122, 11, 46, 0.12);
   border-radius: 16px;
   background: #FFF8FB;
@@ -1917,6 +1924,11 @@ body {
   resize: none;
   min-height: 46px;
   max-height: 90px;
+}
+
+.sms-contact-card {
+  border-top: 1px solid rgba(122, 11, 46, 0.12);
+  padding-top: 8px;
 }
 
 .sms-search-toggle {

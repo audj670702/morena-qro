@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.26
+Versión: v1.10.2.27
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.26';
+const APP_VERSION = 'v1.10.2.27';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -311,8 +311,62 @@ async function cargarPendientesMensajesPwa(memberId) {
       return;
     }
 
-    appState.mensajesPendientesTotal = Number(data.total || 0);
-    appState.mensajesPendientes = Array.isArray(data.pendientes) ? data.pendientes : [];
+    const pendientesRaw =
+      Array.isArray(data.pendientes) ? data.pendientes :
+      Array.isArray(data.pending) ? data.pending :
+      Array.isArray(data.contacts) ? data.contacts :
+      Array.isArray(data.items) ? data.items :
+      Array.isArray(data.conversaciones) ? data.conversaciones :
+      [];
+
+    appState.mensajesPendientes = pendientesRaw.map((item) => ({
+      ...item,
+      conversacionId:
+        item.conversacionId ||
+        item.idConversacion ||
+        item.conversationId ||
+        item.id ||
+        item._id ||
+        '',
+
+      contactoMemberId:
+        item.contactoMemberId ||
+        item.contactMemberId ||
+        item.remitenteMemberId ||
+        item.senderMemberId ||
+        item.memberId ||
+        item.contacto?.memberId ||
+        '',
+
+      nombre:
+        item.nombre ||
+        item.nombreMostrar ||
+        item.displayName ||
+        item.nombreCompleto ||
+        item.contacto?.nombreCompleto ||
+        item.contacto?.nombre ||
+        item.remitenteNombre ||
+        item.asunto ||
+        item.nombreCanal ||
+        'Pendiente',
+
+      ultimoMensaje:
+        item.ultimoMensaje ||
+        item.lastMessage ||
+        item.mensaje ||
+        item.message ||
+        item.body ||
+        item.text ||
+        '',
+
+      count:
+        Number(item.count || item.pendientes || item.total || 1)
+    }));
+
+    appState.mensajesPendientesTotal =
+      Number(data.total || 0) ||
+      appState.mensajesPendientes.reduce((sum, item) => sum + Number(item.count || 1), 0);
+
     renderApp();
 
   } catch (error) {
@@ -1663,11 +1717,12 @@ function renderSmsSelectores() {
           <label class="sms-label">Pendientes</label>
           <select class="sms-input" data-input="sms-pendiente-select">
             <option value="">${pendientes.length ? 'Seleccionar pendiente' : 'Sin mensajes'}</option>
-            ${pendientes.map((item, index) => `
-              <option value="${escapeHTML(String(index))}">
-                ${escapeHTML(item.contacto?.nombreCompleto || item.remitenteNombre || item.nombre || item.asunto || 'Pendiente')}
-              </option>
-            `).join('')}
+${pendientes.map((item, index) => `
+  <option value="${escapeHTML(String(index))}">
+    ${escapeHTML(item.nombre || item.contacto?.nombreCompleto || item.remitenteNombre || item.asunto || 'Pendiente')}
+    ${Number(item.count || 0) > 1 ? ` (${Number(item.count)})` : ''}
+  </option>
+`).join('')}
           </select>
         </div>
       </div>
@@ -1683,11 +1738,40 @@ async function abrirPendienteMensaje(indexValue) {
     return;
   }
 
-  const conversacionId = item.conversacionId || item.idConversacion || item.conversacion?.id || '';
-  const contactoMemberId = item.contactoMemberId || item.remitenteMemberId || item.memberId || item.contacto?.memberId || '';
+  const conversacionId =
+    item.conversacionId ||
+    item.idConversacion ||
+    item.conversationId ||
+    item.id ||
+    '';
+
+  const contactoMemberId =
+    item.contactoMemberId ||
+    item.contactMemberId ||
+    item.remitenteMemberId ||
+    item.senderMemberId ||
+    item.memberId ||
+    item.contacto?.memberId ||
+    '';
 
   if (conversacionId) {
-    await abrirChatConversacion(conversacionId);
+    const existeConversacion = appState.conversaciones.some((conv) => conv.id === conversacionId);
+
+    if (existeConversacion) {
+      await abrirChatConversacion(conversacionId);
+      return;
+    }
+
+    appState.chatConversacion = {
+      id: conversacionId,
+      nombreCanal: item.nombre || item.asunto || 'Pendiente',
+      tipoConversacion: item.tipoConversacion || '',
+      canalFijo: item.canalFijo === true,
+      soloLectura: item.soloLectura === true
+    };
+
+    appState.chatContacto = item.contacto || null;
+    await cargarChatMensajes(conversacionId);
     return;
   }
 

@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.35
+Versión: v1.10.2.36
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.35';
+const APP_VERSION = 'v1.10.2.36';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -95,6 +95,7 @@ chatEnviando: false,
 chatError: '',
 chatTexto: '',
 mensajesBusquedaAbierta: false,
+mensajesPendientesAbierto: true,
 mensajesSyncTimer: null,
 mensajesSyncEnCurso: false,
 instalacion: {
@@ -1705,24 +1706,25 @@ function renderMensajes() {
 
 function renderSmsPendientes() {
   const pendientes = Array.isArray(appState.mensajesPendientes) ? appState.mensajesPendientes : [];
-  const total = Number(appState.mensajesPendientesTotal || 0);
+  const hayPendientes = pendientes.length > 0;
+  const abierto = appState.mensajesPendientesAbierto !== false;
 
   return `
     <article class="sms-card sms-pending-card">
-      <div class="sms-section-head">
-        <div>
-          <strong>Pendientes</strong>
-          <small>${total > 0 ? `${total} mensaje${total === 1 ? '' : 's'} por revisar` : 'Sin pendientes'}</small>
-        </div>
-      </div>
+      <button class="sms-pending-head-toggle" type="button" data-action="sms-pendientes-toggle">
+        <strong>Pendientes</strong>
 
-      ${pendientes.length ? `
+        <span>
+          ${hayPendientes ? '<small>Selecciona contacto</small>' : ''}
+          <b>${abierto ? '▾' : '▸'}</b>
+        </span>
+      </button>
+
+      ${hayPendientes && abierto ? `
         <div class="sms-pending-list">
           ${pendientes.map((item, index) => renderSmsPendienteItem(item, index)).join('')}
         </div>
-      ` : `
-        <div class="empty sms-empty">No tienes mensajes pendientes.</div>
-      `}
+      ` : ''}
     </article>
   `;
 }
@@ -1735,22 +1737,19 @@ function renderSmsPendienteItem(item, index) {
 
   return `
     <article class="sms-pending-item sms-origin-${escapeHTML(tipo)}">
-      <div class="sms-pending-main">
+      <button class="sms-pending-main sms-pending-open" type="button" data-action="sms-pendiente-leer" data-index="${escapeHTML(String(index))}">
         ${renderSmsAvatar({ ...item, smsTipoVisible: tipo, nombreCanal: nombre }, 'sms-avatar-pending')}
 
-        <div class="sms-pending-copy">
+        <span class="sms-pending-copy">
           <p>${escapeHTML(nombre)}</p>
           <small>${escapeHTML(meta)}</small>
-        </div>
-      </div>
+        </span>
+      </button>
 
       <div class="sms-pending-actions">
         ${count > 0 ? `<span class="sms-count">${count}</span>` : ''}
-        <button class="sms-mini-action primary" type="button" data-action="sms-pendiente-leer" data-index="${escapeHTML(String(index))}">
-          Leer
-        </button>
-        <button class="sms-mini-action" type="button" data-action="sms-pendiente-eliminar" data-index="${escapeHTML(String(index))}">
-          Eliminar
+        <button class="sms-pending-delete" type="button" data-action="sms-pendiente-eliminar" data-index="${escapeHTML(String(index))}" aria-label="Eliminar pendiente">
+          ×
         </button>
       </div>
     </article>
@@ -2321,6 +2320,13 @@ document.querySelectorAll('[data-action="tutorial-ios"]').forEach((el) => {
       renderApp();
     });
   });
+
+   document.querySelectorAll('[data-action="sms-pendientes-toggle"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    appState.mensajesPendientesAbierto = appState.mensajesPendientesAbierto === false;
+    renderApp();
+  });
+});
 
      document.querySelectorAll('[data-action="sms-pendiente-leer"]').forEach((el) => {
     el.addEventListener('click', function () {

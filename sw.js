@@ -1,4 +1,4 @@
-./css/styles.css?v=110240
+./css/styles.css?v=110241
 ./js/app.js?v=110240
 
 const APP_FILES = [

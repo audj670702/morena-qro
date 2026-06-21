@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: css/styles.css
-Versión: v1.10.2.29
+Versión: v1.10.2.30
 Alcance: estilos base de la PWA usuario
 */
 
@@ -39,7 +39,9 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
+  min-width: 320px;
   min-height: 100%;
+  overflow-x: hidden;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background:
     radial-gradient(circle at top left, rgba(122, 11, 46, 0.14), transparent 34%),
@@ -48,11 +50,8 @@ body {
 }
 
 body {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 12px;
+  min-height: 100dvh;
+  display: block;
 }
 
 /* =========================================================
@@ -62,19 +61,43 @@ body {
 .app {
   width: 100%;
   max-width: 520px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
   background: rgba(255, 255, 255, 0.98);
-  border: 1px solid var(--morena-border);
-  border-radius: 22px;
-  overflow: hidden;
-  box-shadow: var(--shadow);
+  overflow-x: hidden;
 }
 
 .app-body {
+  width: 100%;
+  min-width: 0;
   padding: 12px;
+  overflow-x: hidden;
+}
+
+.app-body > section,
+.home-screen,
+.sms-screen {
+  width: 100%;
+  min-width: 0;
 }
 
 .hidden {
   display: none !important;
+}
+
+@media (min-width: 560px) {
+  body {
+    padding: 12px;
+  }
+
+  .app {
+    min-height: calc(100dvh - 24px);
+    border: 1px solid var(--morena-border);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+  }
 }
 
 /* =========================================================
@@ -177,6 +200,37 @@ body {
   100% {
     transform: scale(1.055);
   }
+}
+
+/* =========================================================
+   BLOQUE ESTRUCTURA FIJA DE VISTAS v1.10.2.30
+   ========================================================= */
+
+.home-screen,
+.sms-screen,
+section {
+  max-width: 100%;
+}
+
+.nav-card,
+.info-card,
+.media-hero,
+.media-section-card,
+.sms-head-card,
+.sms-card,
+.sms-pending-card,
+.sms-chat-card,
+.sms-contact-card {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+input,
+textarea,
+select,
+button {
+  max-width: 100%;
 }
 
 /* =========================================================

@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.44
+Versión: v1.10.2.45
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.44';
+const APP_VERSION = 'v1.10.2.45';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -2266,36 +2266,18 @@ function renderChat() {
   const nombre = appState.chatContacto?.nombreCompleto || appState.chatConversacion?.nombreCanal || 'Chat';
   const meta = appState.chatContacto?.municipio || obtenerMetaSmsItem(appState.chatConversacion || {}) || 'Selecciona un contacto';
   const soloLectura = appState.chatConversacion?.soloLectura === true;
-   const chatContactMemberId = appState.chatContacto?.memberId || '';
-const puedeAgregarContacto =
-  appState.chatConversacion &&
-  chatContactMemberId &&
-  !soloLectura &&
-  !contactoEstaEnRegulares(chatContactMemberId);
+  const chatContactMemberId = appState.chatContacto?.memberId || '';
+
+  const puedeAgregarContacto =
+    appState.chatConversacion &&
+    chatContactMemberId &&
+    !soloLectura &&
+    !contactoEstaEnRegulares(chatContactMemberId);
 
   return `
     <article class="sms-card sms-chat-card">
-<div class="sms-chat-header">
-  <div class="sms-chat-identity">
-    ${renderSmsAvatar(appState.chatContacto || appState.chatConversacion || {}, 'sms-avatar-chat')}
-
-    <div>
-      <h3>${escapeHTML(appState.chatConversacion ? nombre : 'Chat')}</h3>
-      <p>${escapeHTML(appState.chatConversacion ? meta : 'Selecciona un pendiente o contacto.')}</p>
-    </div>
-  </div>
-
-  ${puedeAgregarContacto ? `
-    <button
-      class="sms-add-contact"
-      type="button"
-      data-action="contacto-regular-agregar"
-      data-member-id="${escapeHTML(chatContactMemberId)}"
-    >
-      + Contacto
-    </button>
-  ` : ''}
-</div>
+      <div class="sms-chat-header">
+        <div class="sms-chat-identity">
           ${renderSmsAvatar(appState.chatContacto || appState.chatConversacion || {}, 'sms-avatar-chat')}
 
           <div>
@@ -2303,6 +2285,17 @@ const puedeAgregarContacto =
             <p>${escapeHTML(appState.chatConversacion ? meta : 'Selecciona un pendiente o contacto.')}</p>
           </div>
         </div>
+
+        ${puedeAgregarContacto ? `
+          <button
+            class="sms-add-contact"
+            type="button"
+            data-action="contacto-regular-agregar"
+            data-member-id="${escapeHTML(chatContactMemberId)}"
+          >
+            + Contacto
+          </button>
+        ` : ''}
       </div>
 
       ${appState.chatError ? `<div class="empty sms-empty">${escapeHTML(appState.chatError)}</div>` : ''}
@@ -2320,14 +2313,14 @@ const puedeAgregarContacto =
             data-input="chat-texto"
           >${escapeHTML(appState.chatTexto)}</textarea>
 
-<button
-  class="btn btn-primary"
-  type="button"
-  data-action="chat-enviar"
-  ${appState.chatEnviando ? 'disabled' : ''}
->
-  ${appState.chatEnviando ? 'Enviando...' : 'Enviar'}
-</button>
+          <button
+            class="btn btn-primary"
+            type="button"
+            data-action="chat-enviar"
+            ${appState.chatEnviando ? 'disabled' : ''}
+          >
+            ${appState.chatEnviando ? 'Enviando...' : 'Enviar'}
+          </button>
         </div>
       ` : ''}
     </article>

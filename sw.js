@@ -1,5 +1,5 @@
-./css/styles.css?v=110238
-./js/app.js?v=110239
+./css/styles.css?v=110240
+./js/app.js?v=110240
 
 const APP_FILES = [
   './',

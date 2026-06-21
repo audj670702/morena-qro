@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.42
+Versión: v1.10.2.43
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.42';
+const APP_VERSION = 'v1.10.2.43';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -17,6 +17,10 @@ const MOR_API_AVISOS = 'https://www.scad.mx/_functions/morAvisosSistema';
 const MOR_API_PENDIENTES = 'https://www.scad.mx/_functions/morMensajesPendientes';
 const MOR_API_CONVERSACIONES = 'https://www.scad.mx/_functions/morConversaciones';
 const MOR_API_CONTACTOS_BUSCAR = 'https://www.scad.mx/_functions/morContactosBuscar';
+const MOR_API_CONTACTOS_REGULARES = 'https://www.scad.mx/_functions/morContactosRegulares';
+const MOR_API_CONTACTO_AGREGAR = 'https://www.scad.mx/_functions/morContactoAgregar';
+const MOR_API_CONTACTO_ELIMINAR_REGULAR = 'https://www.scad.mx/_functions/morContactoEliminarRegular';
+const MOR_API_CONTACTO_ALIAS = 'https://www.scad.mx/_functions/morContactoAlias';
 const MOR_API_CONVERSACION_ABRIR = 'https://www.scad.mx/_functions/morConversacionAbrir';
 const MOR_API_CONVERSACION_MENSAJES = 'https://www.scad.mx/_functions/morConversacionMensajes';
 const MOR_API_MENSAJE_ENVIAR = 'https://www.scad.mx/_functions/morMensajeEnviar';
@@ -87,6 +91,10 @@ contactosBusquedaTimer: null,
 contactosResultados: [],
 contactosCargando: false,
 contactosError: '',
+contactosRegulares: [],
+contactosRegularesCargando: false,
+contactosRegularesError: '',
+contactoAccionEnCurso: false,
 chatConversacion: null,
 chatContacto: null,
 chatMensajes: [],
@@ -264,11 +272,12 @@ async function cargarMultimediaPwa(memberId) {
 }
 
 async function cargarMensajesPwa(memberId) {
-  await Promise.all([
-    cargarAvisosPwa(memberId),
-    cargarPendientesMensajesPwa(memberId),
-    cargarConversacionesPwa(memberId)
-  ]);
+await Promise.all([
+  cargarAvisosPwa(memberId),
+  cargarPendientesMensajesPwa(memberId),
+  cargarConversacionesPwa(memberId),
+  cargarContactosRegularesPwa(memberId)
+]);
 }
 
 async function cargarAvisosPwa(memberId) {
@@ -444,6 +453,106 @@ async function buscarContactosPwa() {
     appState.contactosResultados = [];
     appState.contactosError = 'Error de conexión.';
     appState.contactosCargando = false;
+    renderApp();
+  }
+}
+
+async function cargarContactosRegularesPwa(memberId) {
+  if (!memberId) {
+    appState.contactosRegulares = [];
+    appState.contactosRegularesError = '';
+    return;
+  }
+
+  try {
+    appState.contactosRegularesCargando = true;
+    appState.contactosRegularesError = '';
+    renderApp();
+
+    const url = `${MOR_API_CONTACTOS_REGULARES}?memberId=${encodeURIComponent(memberId)}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    appState.contactosRegulares = data.ok && Array.isArray(data.contactos) ? data.contactos : [];
+    appState.contactosRegularesError = data.ok ? '' : (data.codigo || data.mensaje || 'No fue posible cargar contactos regulares.');
+    appState.contactosRegularesCargando = false;
+    renderApp();
+
+  } catch (error) {
+    console.error('Error al cargar contactos regulares:', error);
+    appState.contactosRegulares = [];
+    appState.contactosRegularesError = 'Error de conexión.';
+    appState.contactosRegularesCargando = false;
+    renderApp();
+  }
+}
+
+async function agregarContactoRegular(contactMemberId) {
+  const memberId = appState.usuario.memberId || '';
+
+  if (!memberId || !contactMemberId || appState.contactoAccionEnCurso) return;
+
+  try {
+    appState.contactoAccionEnCurso = true;
+    renderApp();
+
+    const response = await fetch(MOR_API_CONTACTO_AGREGAR, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memberId, contactMemberId })
+    });
+
+    const data = await response.json();
+
+    if (!data.ok) {
+      appState.chatError = data.mensaje || 'No fue posible agregar el contacto.';
+    }
+
+    await cargarContactosRegularesPwa(memberId);
+
+  } catch (error) {
+    console.error('Error al agregar contacto regular:', error);
+    appState.chatError = 'Error de conexión al agregar contacto.';
+
+  } finally {
+    appState.contactoAccionEnCurso = false;
+    renderApp();
+  }
+}
+
+async function eliminarContactoRegular(contactMemberId) {
+  const memberId = appState.usuario.memberId || '';
+
+  if (!memberId || !contactMemberId || appState.contactoAccionEnCurso) return;
+
+  const confirmar = window.confirm('¿Quitar este contacto de tus contactos regulares?');
+
+  if (!confirmar) return;
+
+  try {
+    appState.contactoAccionEnCurso = true;
+    renderApp();
+
+    const response = await fetch(MOR_API_CONTACTO_ELIMINAR_REGULAR, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memberId, contactMemberId })
+    });
+
+    const data = await response.json();
+
+    if (!data.ok) {
+      appState.contactosRegularesError = data.mensaje || 'No fue posible quitar el contacto.';
+    }
+
+    await cargarContactosRegularesPwa(memberId);
+
+  } catch (error) {
+    console.error('Error al quitar contacto regular:', error);
+    appState.contactosRegularesError = 'Error de conexión.';
+
+  } finally {
+    appState.contactoAccionEnCurso = false;
     renderApp();
   }
 }
@@ -1884,11 +1993,44 @@ function obtenerConversacionesDirectas() {
   });
 }
 
+function obtenerContactIdDesdeContacto(item) {
+  return (
+    item?.contactMemberId ||
+    item?.contactoMemberId ||
+    item?.memberId ||
+    item?.contacto?.memberId ||
+    ''
+  );
+}
+
+function contactoEstaEnRegulares(contactMemberId) {
+  const id = String(contactMemberId || '').trim();
+
+  if (!id) return false;
+
+  return appState.contactosRegulares.some((item) => {
+    const itemId = obtenerContactIdDesdeContacto(item);
+    return itemId === id && item.regular !== false;
+  });
+}
+
+function obtenerNombreContactoRegular(item) {
+  return item.contactAlias || item.nombreMostrar || item.nombreCompleto || item.nombre || 'Contacto';
+}
+
+function obtenerMetaContactoRegular(item) {
+  if (item.contactAlias && item.nombreCompleto) {
+    return `${item.nombreCompleto}${item.municipio ? ` · ${item.municipio}` : ''}`;
+  }
+
+  return item.municipio || item.codigoControl || 'Contacto regular';
+}
+
 function renderBuscarContactos() {
   const abierta = appState.mensajesBusquedaAbierta;
-  const conversaciones = obtenerConversacionesDirectas();
-  const modo = appState.contactosModo || 'regulares';
-  const totalRegulares = conversaciones.length;
+const contactosRegulares = Array.isArray(appState.contactosRegulares) ? appState.contactosRegulares : [];
+const modo = appState.contactosModo || 'regulares';
+const totalRegulares = contactosRegulares.length;
 
   return `
     <article class="sms-card sms-contact-card">
@@ -1925,7 +2067,7 @@ function renderBuscarContactos() {
 
           ${modo === 'buscar'
             ? renderContactosBusquedaPanel()
-            : renderContactosRegularesPanel(conversaciones)
+            : renderContactosRegularesPanel(contactosRegulares)
           }
         </div>
       ` : ''}
@@ -1933,15 +2075,54 @@ function renderBuscarContactos() {
   `;
 }
 
-function renderContactosRegularesPanel(conversaciones) {
-  if (!conversaciones.length) {
+function renderContactosRegularesPanel(contactos) {
+  if (appState.contactosRegularesCargando) {
+    return `<div class="empty sms-empty">Cargando contactos regulares...</div>`;
+  }
+
+  if (appState.contactosRegularesError) {
+    return `<div class="empty sms-empty">${escapeHTML(appState.contactosRegularesError)}</div>`;
+  }
+
+  if (!contactos.length) {
     return `<div class="empty sms-empty">Sin contactos regulares.</div>`;
   }
 
   return `
     <div class="sms-contact-list">
-      ${conversaciones.map((conv) => renderConversacionDirectaItem(conv)).join('')}
+      ${contactos.map((contacto) => renderContactoRegularItem(contacto)).join('')}
     </div>
+  `;
+}
+
+function renderContactoRegularItem(contacto) {
+  const contactMemberId = obtenerContactIdDesdeContacto(contacto);
+  const nombre = obtenerNombreContactoRegular(contacto);
+  const meta = obtenerMetaContactoRegular(contacto);
+
+  return `
+    <article class="sms-contact-item sms-contact-regular-item">
+      <button class="sms-contact-open-main" type="button" data-action="chat-contacto" data-member-id="${escapeHTML(contactMemberId)}">
+        <div class="sms-contact-main">
+          ${renderSmsAvatar(contacto, 'sms-avatar-mini')}
+
+          <div>
+            <p>${escapeHTML(nombre)}</p>
+            <small>${escapeHTML(meta)}</small>
+          </div>
+        </div>
+      </button>
+
+      <button
+        class="sms-contact-remove"
+        type="button"
+        data-action="contacto-regular-eliminar"
+        data-member-id="${escapeHTML(contactMemberId)}"
+        aria-label="Quitar contacto regular"
+      >
+        ×
+      </button>
+    </article>
   `;
 }
 
@@ -2022,11 +2203,36 @@ function renderChat() {
   const nombre = appState.chatContacto?.nombreCompleto || appState.chatConversacion?.nombreCanal || 'Chat';
   const meta = appState.chatContacto?.municipio || obtenerMetaSmsItem(appState.chatConversacion || {}) || 'Selecciona un contacto';
   const soloLectura = appState.chatConversacion?.soloLectura === true;
+   const chatContactMemberId = appState.chatContacto?.memberId || '';
+const puedeAgregarContacto =
+  appState.chatConversacion &&
+  chatContactMemberId &&
+  !soloLectura &&
+  !contactoEstaEnRegulares(chatContactMemberId);
 
   return `
     <article class="sms-card sms-chat-card">
-      <div class="sms-chat-header">
-        <div class="sms-chat-identity">
+<div class="sms-chat-header">
+  <div class="sms-chat-identity">
+    ${renderSmsAvatar(appState.chatContacto || appState.chatConversacion || {}, 'sms-avatar-chat')}
+
+    <div>
+      <h3>${escapeHTML(appState.chatConversacion ? nombre : 'Chat')}</h3>
+      <p>${escapeHTML(appState.chatConversacion ? meta : 'Selecciona un pendiente o contacto.')}</p>
+    </div>
+  </div>
+
+  ${puedeAgregarContacto ? `
+    <button
+      class="sms-add-contact"
+      type="button"
+      data-action="contacto-regular-agregar"
+      data-member-id="${escapeHTML(chatContactMemberId)}"
+    >
+      + Contacto
+    </button>
+  ` : ''}
+</div>
           ${renderSmsAvatar(appState.chatContacto || appState.chatConversacion || {}, 'sms-avatar-chat')}
 
           <div>
@@ -2371,6 +2577,18 @@ document.querySelectorAll('[data-action="chat-contacto"]').forEach((el) => {
   el.addEventListener('click', function () {
     appState.mensajesBusquedaAbierta = false;
     abrirChatContacto(el.getAttribute('data-member-id') || '');
+  });
+});
+
+   document.querySelectorAll('[data-action="contacto-regular-agregar"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    agregarContactoRegular(el.getAttribute('data-member-id') || '');
+  });
+});
+
+document.querySelectorAll('[data-action="contacto-regular-eliminar"]').forEach((el) => {
+  el.addEventListener('click', function () {
+    eliminarContactoRegular(el.getAttribute('data-member-id') || '');
   });
 });
 

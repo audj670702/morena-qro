@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: css/styles.css
-Versión: v1.10.2.44
+Versión: v1.10.2.45
 Alcance: estilos base de la PWA usuario
 */
 
@@ -1914,9 +1914,9 @@ button {
   font-size: 11px;
   line-height: 1.15;
   color: var(--text-muted);
+}
 
-
-   .sms-add-contact {
+.sms-add-contact {
   appearance: none;
   -webkit-appearance: none;
   min-height: 28px;

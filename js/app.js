@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.45
+Versión: v1.10.2.46
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.45';
+const APP_VERSION = 'v1.10.2.46';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -2293,7 +2293,7 @@ function renderChat() {
             data-action="contacto-regular-agregar"
             data-member-id="${escapeHTML(chatContactMemberId)}"
           >
-            + Contacto
+            Agregar como contacto
           </button>
         ` : ''}
       </div>

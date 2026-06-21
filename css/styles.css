@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: css/styles.css
-Versión: v1.10.2.38
+Versión: v1.10.2.39
 Alcance: estilos base de la PWA usuario
 */
 
@@ -1747,13 +1747,32 @@ button {
 }
 
 .sms-pending-head-toggle b {
+  width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--morena-primary);
-  font-size: 12px;
+  font-size: 20px;
   line-height: 1;
   font-weight: 900;
+}
+
+.sms-pending-head-toggle.has-pending strong {
+  animation: smsPendingTitleFlash 1.45s ease-in-out infinite;
+}
+
+@keyframes smsPendingTitleFlash {
+  0%,
+  100% {
+    color: var(--text-main);
+    text-shadow: none;
+  }
+
+  50% {
+    color: var(--morena-primary);
+    text-shadow: 0 0 8px rgba(94, 12, 12, 0.22);
+  }
 }
 
 .sms-pending-card {
@@ -2122,11 +2141,13 @@ button {
 }
 
 .sms-contact-head-toggle b {
+  width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--morena-primary);
-  font-size: 12px;
+  font-size: 20px;
   line-height: 1;
   font-weight: 900;
 }

@@ -1,4 +1,5 @@
-const CACHE_NAME = 'morena-qro-v1-10-2-29';
+./css/styles.css?v=110229
+./js/app.js?v=110229
 
 const APP_FILES = [
   './',

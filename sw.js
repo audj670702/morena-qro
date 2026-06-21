@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morena-qro-v1-10-2-19';
+const CACHE_NAME = 'morena-qro-v1-10-2-21';
 
 const APP_FILES = [
   './',
@@ -6,8 +6,8 @@ const APP_FILES = [
   './manifest.webmanifest',
   './css/styles.css',
   './js/app.js',
-  './icon-192.png',
-  './icon-512.png',
+  './assets/icon-mor-192.png',
+  './assets/icon-mor-512.png',
   './assets/Logo_Mor.png',
   './assets/Logo_MORENA_Qro.png',
   './assets/icon-192.png',

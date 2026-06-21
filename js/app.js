@@ -1747,12 +1747,9 @@ function renderSmsPendienteItem(item, index) {
         </span>
       </button>
 
-      <div class="sms-pending-actions">
-        ${count > 0 ? `<span class="sms-count">${count}</span>` : ''}
-        <button class="sms-pending-delete" type="button" data-action="sms-pendiente-eliminar" data-index="${escapeHTML(String(index))}" aria-label="Eliminar pendiente">
-          ×
-        </button>
-      </div>
+<div class="sms-pending-actions">
+  ${count > 0 ? `<span class="sms-count">${count}</span>` : ''}
+</div>
     </article>
   `;
 }
@@ -1871,22 +1868,6 @@ async function abrirPendienteMensaje(indexValue) {
   if (contactoMemberId) {
     await abrirChatContacto(contactoMemberId);
   }
-}
-
-function ocultarPendienteMensaje(indexValue) {
-  const index = Number(indexValue);
-
-  if (!Array.isArray(appState.mensajesPendientes) || index < 0) {
-    return;
-  }
-
-  appState.mensajesPendientes.splice(index, 1);
-
-  appState.mensajesPendientesTotal = appState.mensajesPendientes.reduce((sum, item) => {
-    return sum + Number(item.count || 1);
-  }, 0);
-
-  renderApp();
 }
 
 function obtenerConversacionesDirectas() {
@@ -2378,12 +2359,6 @@ document.querySelectorAll('[data-action="tutorial-ios"]').forEach((el) => {
      document.querySelectorAll('[data-action="sms-pendiente-leer"]').forEach((el) => {
     el.addEventListener('click', function () {
       abrirPendienteMensaje(el.getAttribute('data-index') || '');
-    });
-  });
-
-  document.querySelectorAll('[data-action="sms-pendiente-eliminar"]').forEach((el) => {
-    el.addEventListener('click', function () {
-      ocultarPendienteMensaje(el.getAttribute('data-index') || '');
     });
   });
 

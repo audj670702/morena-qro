@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.48
+Versión: v1.10.2.49
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.48';
+const APP_VERSION = 'v1.10.2.49';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -73,6 +73,8 @@ multimedia: [],
 multimediaCargando: false,
 multimediaError: '',
 multimediaActualId: '',
+multimediaCarruselIndex: 0,
+multimediaCarruselTimer: null,
 multimediaModal: '',
 multimediaBusqueda: '',
 multimediaCategoria: 'Todos',
@@ -254,12 +256,16 @@ async function cargarMultimediaPwa(memberId) {
     appState.multimedia = Array.isArray(data.multimedia) ? data.multimedia : [];
     appState.multimediaCargando = false;
 
-    const destacado = appState.multimedia.find((item) => item.destacadoInicio) || appState.multimedia[0];
+    const destacados = obtenerMultimediaCarruselInicio();
+    const destacado = destacados[0] || appState.multimedia[0];
+
+    appState.multimediaCarruselIndex = 0;
 
     if (destacado && !appState.multimediaActualId) {
       appState.multimediaActualId = destacado.id;
     }
 
+    iniciarCarruselMultimediaInicio();
     renderApp();
 
   } catch (error) {
@@ -751,6 +757,12 @@ function setVista(vista) {
     detenerSincronizacionMensajes();
   }
 
+  if (vista === 'inicio') {
+    iniciarCarruselMultimediaInicio();
+  } else {
+    detenerCarruselMultimediaInicio();
+  }
+
   renderApp();
 }
 
@@ -818,6 +830,10 @@ async function actualizarDatosPwa() {
   await cargarDocumentosPwa(memberId);
   await cargarMultimediaPwa(memberId);
   await cargarMensajesPwa(memberId);
+
+  if (appState.vistaActual === 'inicio') {
+    iniciarCarruselMultimediaInicio();
+  }
 }
 
 function usuarioEsADM() {
@@ -1210,8 +1226,8 @@ function renderAccesoSinSesion() {
   `;
 }
 
-function renderInicioBannerMultimedia() {
-  const item = obtenerMultimediaActual();
+function renderInicioBannerMultimedia() 
+   const item = obtenerMultimediaCarruselActual();
   const titulo = item.titulo || 'Multimedia';
   const detalle = item.descripcion || '';
 
@@ -1757,6 +1773,61 @@ function renderDetalleMultimedia(label, value) {
 
 function obtenerMultimediaActual() {
   return appState.multimedia.find((item) => item.id === appState.multimediaActualId) || appState.multimedia[0] || {};
+}
+
+function obtenerMultimediaCarruselInicio() {
+  return appState.multimedia.filter((item) => {
+    const estadoContenido = String(item.estadoContenido || '').toUpperCase();
+    const publicado = !estadoContenido || estadoContenido === 'PUBLICADO';
+    const mostrarInicio = item.mostrarEnInicio === true || item.destacadoInicio === true;
+    const tipo = normalizarTexto(item.tipoMultimedia || item.tipoFuente || '');
+    const esVideo = tipo.includes('video') || Boolean(item.urlEmbed);
+
+    return publicado && mostrarInicio && esVideo;
+  });
+}
+
+function obtenerMultimediaCarruselActual() {
+  const items = obtenerMultimediaCarruselInicio();
+
+  if (!items.length) {
+    return obtenerMultimediaActual();
+  }
+
+  const index = appState.multimediaCarruselIndex % items.length;
+  return items[index] || items[0] || {};
+}
+
+function iniciarCarruselMultimediaInicio() {
+  detenerCarruselMultimediaInicio();
+
+  const items = obtenerMultimediaCarruselInicio();
+
+  if (items.length <= 1) {
+    return;
+  }
+
+  appState.multimediaCarruselTimer = window.setInterval(function () {
+    const actuales = obtenerMultimediaCarruselInicio();
+
+    if (appState.vistaActual !== 'inicio' || actuales.length <= 1) {
+      return;
+    }
+
+    appState.multimediaCarruselIndex =
+      (appState.multimediaCarruselIndex + 1) % actuales.length;
+
+    appState.multimediaActualId = actuales[appState.multimediaCarruselIndex]?.id || '';
+
+    renderApp();
+  }, 3000);
+}
+
+function detenerCarruselMultimediaInicio() {
+  if (appState.multimediaCarruselTimer) {
+    window.clearInterval(appState.multimediaCarruselTimer);
+    appState.multimediaCarruselTimer = null;
+  }
 }
 
 function construirEmbedFacebook(url) {

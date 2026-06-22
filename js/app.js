@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.50
+Versión: v1.10.2.51
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.50';
+const APP_VERSION = 'v1.10.2.51';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -77,6 +77,8 @@ multimediaModal: '',
 multimediaBusqueda: '',
 multimediaCategoria: 'Todos',
 multimediaTipo: '',
+multimediaCarouselIndex: 0,
+multimediaCarouselTimer: null,
 facebookModal: false,
 avisos: [],
 avisosCanal: null,
@@ -251,19 +253,19 @@ async function cargarMultimediaPwa(memberId) {
       return;
     }
 
-    appState.multimedia = Array.isArray(data.multimedia) ? data.multimedia : [];
-    appState.multimediaCargando = false;
+appState.multimedia = Array.isArray(data.multimedia) ? data.multimedia : [];
+appState.multimediaCargando = false;
+appState.multimediaCarouselIndex = 0;
 
-const destacado =
-  obtenerMultimediaInicioActual() ||
-  appState.multimedia.find((item) => multimediaPublicado(item)) ||
-  appState.multimedia[0];
+const destacado = obtenerMultimediaInicioActual();
 
-if (destacado && !appState.multimediaActualId) {
+if (destacado && destacado.id && !appState.multimediaActualId) {
   appState.multimediaActualId = destacado.id;
 }
 
-    renderApp();
+iniciarCarruselMultimedia();
+
+renderApp();
 
   } catch (error) {
     console.error('Error al cargar multimedia PWA:', error);
@@ -1215,19 +1217,21 @@ function renderAccesoSinSesion() {
 
 function renderInicioBannerMultimedia() {
   const item = obtenerMultimediaInicioActual();
+  const itemsCarrusel = obtenerMultimediaCarruselInicio();
+  const indexActivo = Math.min(appState.multimediaCarouselIndex || 0, Math.max(itemsCarrusel.length - 1, 0));
   const titulo = item.titulo || 'Multimedia';
   const detalle = item.descripcion || '';
   const tipo = normalizarTipoMultimedia(item);
-   const miniatura = obtenerMiniaturaMultimedia(item);
+  const miniatura = obtenerMiniaturaMultimedia(item);
 
   return `
     <button class="home-feature-card media-feature-card" type="button" data-action="multimedia-reciente">
       <div class="feature-visual">
-${miniatura ? `
-  <img src="${escapeHTML(miniatura)}" alt="${escapeHTML(titulo)}" />
-` : `
-  <span>${escapeHTML(iconoMultimedia(tipo || 'VIDEO'))}</span>
-`}
+        ${miniatura ? `
+          <img src="${escapeHTML(miniatura)}" alt="${escapeHTML(titulo)}" />
+        ` : `
+          <span>${escapeHTML(iconoMultimedia(tipo || 'VIDEO'))}</span>
+        `}
 
         <i class="feature-play">▶</i>
 
@@ -1237,6 +1241,14 @@ ${miniatura ? `
             ${detalle ? `<small>${escapeHTML(detalle)}</small>` : ''}
           </div>
         </div>
+
+        ${itemsCarrusel.length > 1 ? `
+          <div class="feature-dots">
+            ${itemsCarrusel.map((_, index) => `
+              <span class="feature-dot ${index === indexActivo ? 'active' : ''}"></span>
+            `).join('')}
+          </div>
+        ` : ''}
       </div>
     </button>
   `;
@@ -1792,28 +1804,45 @@ function obtenerMultimediaActual() {
     {};
 }
 
+function obtenerMultimediaCarruselInicio() {
+  return appState.multimedia
+    .filter((item) => {
+      const tipo = normalizarTipoMultimedia(item);
+
+      return multimediaPublicado(item) &&
+        item.activo !== false &&
+        item.mostrarEnInicio === true &&
+        tipo !== 'FACEBOOK';
+    })
+    .sort((a, b) => {
+      const destacadoA = a.destacadoInicio === true ? 0 : 1;
+      const destacadoB = b.destacadoInicio === true ? 0 : 1;
+
+      if (destacadoA !== destacadoB) {
+        return destacadoA - destacadoB;
+      }
+
+      const ordenA = Number(a.orden || 0);
+      const ordenB = Number(b.orden || 0);
+
+      if (ordenA !== ordenB) {
+        return ordenA - ordenB;
+      }
+
+      return new Date(b.fechaPublicacion || 0).getTime() - new Date(a.fechaPublicacion || 0).getTime();
+    });
+}
+
 function obtenerMultimediaInicioActual() {
-  const items = appState.multimedia.filter((item) => {
-    const tipo = normalizarTipoMultimedia(item);
+  const items = obtenerMultimediaCarruselInicio();
 
-    return multimediaPublicado(item) && tipo !== 'FACEBOOK';
-  });
+  if (!items.length) {
+    return {};
+  }
 
-  const destacadoVideo = items.find((item) => {
-    return item.mostrarEnInicio === true && item.destacadoInicio === true && normalizarTipoMultimedia(item) === 'VIDEO';
-  });
+  const index = Math.max(0, Math.min(appState.multimediaCarouselIndex || 0, items.length - 1));
 
-  const inicioVideo = items.find((item) => {
-    return item.mostrarEnInicio === true && normalizarTipoMultimedia(item) === 'VIDEO';
-  });
-
-  const destacado = items.find((item) => {
-    return item.mostrarEnInicio === true && item.destacadoInicio === true;
-  });
-
-  const inicio = items.find((item) => item.mostrarEnInicio === true);
-
-  return destacadoVideo || inicioVideo || destacado || inicio || items[0] || {};
+  return items[index] || items[0] || {};
 }
 
 function construirEmbedFacebook(url) {
@@ -1824,6 +1853,38 @@ function construirEmbedFacebook(url) {
   }
 
   return `https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(link)}&show_text=true&width=500`;
+}
+
+function iniciarCarruselMultimedia() {
+  detenerCarruselMultimedia();
+
+  const items = obtenerMultimediaCarruselInicio();
+
+  if (items.length <= 1) {
+    return;
+  }
+
+  appState.multimediaCarouselTimer = window.setInterval(() => {
+    const actuales = obtenerMultimediaCarruselInicio();
+
+    if (actuales.length <= 1) {
+      detenerCarruselMultimedia();
+      return;
+    }
+
+    appState.multimediaCarouselIndex = ((appState.multimediaCarouselIndex || 0) + 1) % actuales.length;
+
+    if (appState.vistaActual === 'inicio') {
+      renderApp();
+    }
+  }, 3000);
+}
+
+function detenerCarruselMultimedia() {
+  if (appState.multimediaCarouselTimer) {
+    window.clearInterval(appState.multimediaCarouselTimer);
+    appState.multimediaCarouselTimer = null;
+  }
 }
 
 function obtenerFacebookInicioActual() {

@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.52
+Versión: v1.10.2.53
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.52';
+const APP_VERSION = 'v1.10.2.53';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -1225,7 +1225,7 @@ function renderInicioBannerMultimedia() {
   const miniatura = obtenerMiniaturaMultimedia(item);
 
   return `
-    <button class="home-feature-card media-feature-card" type="button" data-action="multimedia-reciente">
+    <button id="homeMultimediaFeature" class="home-feature-card media-feature-card" type="button" data-action="multimedia-reciente">
       <div class="feature-visual">
         ${miniatura ? `
           <img src="${escapeHTML(miniatura)}" alt="${escapeHTML(titulo)}" />
@@ -1901,6 +1901,26 @@ function normalizarUrlFacebookEmbed(url) {
   }
 }
 
+function actualizarCarruselMultimediaHome() {
+  const card = document.getElementById('homeMultimediaFeature');
+
+  if (!card || appState.vistaActual !== 'inicio') {
+    return false;
+  }
+
+  card.outerHTML = renderInicioBannerMultimedia();
+
+  const nuevaCard = document.getElementById('homeMultimediaFeature');
+
+  if (nuevaCard) {
+    nuevaCard.addEventListener('click', function () {
+      abrirMultimediaReciente();
+    });
+  }
+
+  return true;
+}
+
 function iniciarCarruselMultimedia() {
   detenerCarruselMultimedia();
 
@@ -1918,11 +1938,15 @@ function iniciarCarruselMultimedia() {
       return;
     }
 
-    appState.multimediaCarouselIndex = ((appState.multimediaCarouselIndex || 0) + 1) % actuales.length;
+appState.multimediaCarouselIndex = ((appState.multimediaCarouselIndex || 0) + 1) % actuales.length;
 
-    if (appState.vistaActual === 'inicio') {
-      renderApp();
-    }
+if (appState.vistaActual === 'inicio') {
+  const actualizado = actualizarCarruselMultimediaHome();
+
+  if (!actualizado) {
+    renderApp();
+  }
+}
   }, 3000);
 }
 

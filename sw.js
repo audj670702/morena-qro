@@ -2,11 +2,12 @@
 ./js/app.js?v=110251
 
 const APP_FILES = [
+  const CACHE_NAME = 'morena-qro-v110251';
   './',
   './index.html',
   './manifest.webmanifest',
-  './css/styles.css?v=110227',
-  './js/app.js?v=110227',
+  './css/styles.css?v=110251',
+  './js/app.js?v=110251',
   './assets/icon-mor-192.png',
   './assets/icon-mor-512.png',
   './assets/Logo_Mor.png',

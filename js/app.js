@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.53
+Versión: v1.10.2.54
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.53';
+const APP_VERSION = 'v1.10.2.54';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -1258,8 +1258,7 @@ function renderInicioBannerFacebook() {
   const item = obtenerFacebookInicioActual();
   const titulo = item.titulo || 'Facebook';
   const detalle = item.descripcion || 'MORENA QRO';
-  const urlContenido = item.urlContenido || item.urlMultimedia || '';
-  const urlEmbed = construirEmbedFacebook(urlContenido);
+const urlEmbed = obtenerEmbedFacebook(item);
 
   return `
     <button class="home-feature-card facebook-feature-card" type="button" data-action="facebook-modal-abrir">
@@ -1346,8 +1345,8 @@ function renderModalFacebookInicio() {
 
   const item = obtenerFacebookInicioActual();
   const titulo = item.titulo || 'Publicación de Facebook';
-  const urlContenido = item.urlContenido || item.urlMultimedia || MORENA_FACEBOOK_URL;
-  const urlEmbed = construirEmbedFacebook(urlContenido);
+const urlContenido = item.urlContenido || item.urlMultimedia || MORENA_FACEBOOK_URL;
+const urlEmbed = obtenerEmbedFacebook(item) || construirEmbedFacebook(urlContenido);
 
   return `
     <div class="fb-modal-overlay open">
@@ -1843,6 +1842,18 @@ function obtenerMultimediaInicioActual() {
   const index = Math.max(0, Math.min(appState.multimediaCarouselIndex || 0, items.length - 1));
 
   return items[index] || items[0] || {};
+}
+
+function obtenerEmbedFacebook(item = {}) {
+  const embedDirecto = String(item.urlEmbed || '').trim();
+
+  if (embedDirecto && embedDirecto.includes('facebook.com/plugins/post.php')) {
+    return embedDirecto;
+  }
+
+  const urlContenido = item.urlContenido || item.urlMultimedia || '';
+
+  return construirEmbedFacebook(urlContenido);
 }
 
 function construirEmbedFacebook(url) {

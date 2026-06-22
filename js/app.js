@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.48
+Versión: v1.10.2.49
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.48';
+const APP_VERSION = 'v1.10.2.49';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -254,11 +254,14 @@ async function cargarMultimediaPwa(memberId) {
     appState.multimedia = Array.isArray(data.multimedia) ? data.multimedia : [];
     appState.multimediaCargando = false;
 
-    const destacado = appState.multimedia.find((item) => item.destacadoInicio) || appState.multimedia[0];
+const destacado =
+  obtenerMultimediaInicioActual() ||
+  appState.multimedia.find((item) => multimediaPublicado(item)) ||
+  appState.multimedia[0];
 
-    if (destacado && !appState.multimediaActualId) {
-      appState.multimediaActualId = destacado.id;
-    }
+if (destacado && !appState.multimediaActualId) {
+  appState.multimediaActualId = destacado.id;
+}
 
     renderApp();
 
@@ -1211,9 +1214,10 @@ function renderAccesoSinSesion() {
 }
 
 function renderInicioBannerMultimedia() {
-  const item = obtenerMultimediaActual();
+  const item = obtenerMultimediaInicioActual();
   const titulo = item.titulo || 'Multimedia';
   const detalle = item.descripcion || '';
+  const tipo = normalizarTipoMultimedia(item);
 
   return `
     <button class="home-feature-card media-feature-card" type="button" data-action="multimedia-reciente">
@@ -1221,7 +1225,7 @@ function renderInicioBannerMultimedia() {
         ${item.urlVistaPrevia ? `
           <img src="${escapeHTML(item.urlVistaPrevia)}" alt="${escapeHTML(titulo)}" />
         ` : `
-          <span>${escapeHTML(iconoMultimedia(item.tipoMultimedia || 'Video'))}</span>
+          <span>${escapeHTML(iconoMultimedia(tipo || 'VIDEO'))}</span>
         `}
 
         <i class="feature-play">▶</i>
@@ -1552,8 +1556,8 @@ function renderMultimediaContenido() {
           ${escapeHTML(actual.codigoControl || 'MUL')} · ${escapeHTML(actual.tipoMultimedia || 'Multimedia')} · ${escapeHTML(actual.categoria || 'General')}
         </div>
 
-<div class="media-actions ${actual.urlEmbed ? '' : 'single'}">
-  ${actual.urlEmbed ? `
+<div class="media-actions ${multimediaAccionPrincipal(actual) ? '' : 'single'}">
+  ${multimediaAccionPrincipal(actual) ? `
     <button class="btn btn-primary" type="button" data-action="multimedia-ver" data-id="${escapeHTML(actual.id)}">
       Ver contenido
     </button>
@@ -1636,8 +1640,33 @@ function renderModalMultimedia() {
 
 function renderModalVerMultimedia() {
   const item = obtenerMultimediaActual();
+  const tipo = normalizarTipoMultimedia(item);
+  const embed = obtenerEmbedMultimedia(item);
+  const url = obtenerUrlPrincipalMultimedia(item);
 
-  if (!item.urlEmbed) {
+  if (tipo === 'IMAGEN' && url) {
+    return `
+      <div class="media-overlay open">
+        <section class="media-modal media-modal-player">
+          <div class="media-modal-head">
+            <h3>${escapeHTML(item.titulo || 'Imagen')}</h3>
+            <button class="media-close" type="button" data-action="multimedia-cerrar">×</button>
+          </div>
+
+          <div class="media-player">
+            <img src="${escapeHTML(url)}" alt="${escapeHTML(item.titulo || 'Imagen')}" style="width:100%;height:100%;object-fit:contain;display:block;" />
+          </div>
+
+          <div class="media-player-meta">
+            <strong>${escapeHTML(item.codigoControl || 'MUL')}</strong>
+            <span>${escapeHTML(item.tipoMultimedia || 'Multimedia')} · ${escapeHTML(item.categoria || 'General')}</span>
+          </div>
+        </section>
+      </div>
+    `;
+  }
+
+  if (!embed) {
     return renderModalInfoMultimedia();
   }
 
@@ -1651,7 +1680,7 @@ function renderModalVerMultimedia() {
 
         <div class="media-player">
           <iframe
-            src="${escapeHTML(item.urlEmbed)}"
+            src="${escapeHTML(embed)}"
             title="${escapeHTML(item.titulo || 'Contenido multimedia')}"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -1727,13 +1756,13 @@ function renderModalBuscarMultimedia() {
             `).join('')}
           </div>
 
-          <select class="media-select" data-input="multimedia-tipo">
-            <option value="" ${!appState.multimediaTipo ? 'selected' : ''}>Todos los tipos</option>
-            <option value="Video" ${appState.multimediaTipo === 'Video' ? 'selected' : ''}>Video</option>
-            <option value="Audio" ${appState.multimediaTipo === 'Audio' ? 'selected' : ''}>Audio</option>
-            <option value="Infografía" ${appState.multimediaTipo === 'Infografía' ? 'selected' : ''}>Infografía</option>
-            <option value="Enlace" ${appState.multimediaTipo === 'Enlace' ? 'selected' : ''}>Enlace</option>
-          </select>
+<select class="media-select" data-input="multimedia-tipo">
+  <option value="" ${!appState.multimediaTipo ? 'selected' : ''}>Todos los tipos</option>
+  <option value="VIDEO" ${appState.multimediaTipo === 'VIDEO' ? 'selected' : ''}>Video</option>
+  <option value="FACEBOOK" ${appState.multimediaTipo === 'FACEBOOK' ? 'selected' : ''}>Facebook</option>
+  <option value="ENLACE" ${appState.multimediaTipo === 'ENLACE' ? 'selected' : ''}>Enlace</option>
+  <option value="IMAGEN" ${appState.multimediaTipo === 'IMAGEN' ? 'selected' : ''}>Imagen</option>
+</select>
 
           <div class="media-result-list">
             ${filtrados.length ? filtrados.map((item) => renderMiniMultimedia(item)).join('') : `
@@ -1756,7 +1785,34 @@ function renderDetalleMultimedia(label, value) {
 }
 
 function obtenerMultimediaActual() {
-  return appState.multimedia.find((item) => item.id === appState.multimediaActualId) || appState.multimedia[0] || {};
+  return appState.multimedia.find((item) => item.id === appState.multimediaActualId) ||
+    obtenerMultimediaInicioActual() ||
+    appState.multimedia[0] ||
+    {};
+}
+
+function obtenerMultimediaInicioActual() {
+  const items = appState.multimedia.filter((item) => {
+    const tipo = normalizarTipoMultimedia(item);
+
+    return multimediaPublicado(item) && tipo !== 'FACEBOOK';
+  });
+
+  const destacadoVideo = items.find((item) => {
+    return item.mostrarEnInicio === true && item.destacadoInicio === true && normalizarTipoMultimedia(item) === 'VIDEO';
+  });
+
+  const inicioVideo = items.find((item) => {
+    return item.mostrarEnInicio === true && normalizarTipoMultimedia(item) === 'VIDEO';
+  });
+
+  const destacado = items.find((item) => {
+    return item.mostrarEnInicio === true && item.destacadoInicio === true;
+  });
+
+  const inicio = items.find((item) => item.mostrarEnInicio === true);
+
+  return destacadoVideo || inicioVideo || destacado || inicio || items[0] || {};
 }
 
 function construirEmbedFacebook(url) {
@@ -1771,17 +1827,16 @@ function construirEmbedFacebook(url) {
 
 function obtenerFacebookInicioActual() {
   const facebookItems = appState.multimedia.filter((item) => {
-    const tipo = normalizarTexto(item.tipoFuente || item.tipoMultimedia);
-    const estadoContenido = String(item.estadoContenido || '').toUpperCase();
-    const publicado = !estadoContenido || estadoContenido === 'PUBLICADO';
-    const esFacebook = tipo === 'facebook';
-
-    return esFacebook && publicado;
+    return normalizarTipoMultimedia(item) === 'FACEBOOK' && multimediaPublicado(item);
   });
 
-  const destacado = facebookItems.find((item) => item.mostrarEnInicio === true);
+  const destacado = facebookItems.find((item) => {
+    return item.mostrarEnInicio === true && item.destacadoInicio === true;
+  });
 
-  return destacado || facebookItems[0] || {};
+  const inicio = facebookItems.find((item) => item.mostrarEnInicio === true);
+
+  return destacado || inicio || facebookItems[0] || {};
 }
 
 function obtenerCategoriasMultimedia() {
@@ -1795,11 +1850,12 @@ function obtenerCategoriasMultimedia() {
 function filtrarMultimedia() {
   const q = normalizarTexto(appState.multimediaBusqueda);
   const categoria = appState.multimediaCategoria;
-  const tipo = appState.multimediaTipo;
+  const tipo = String(appState.multimediaTipo || '').toUpperCase();
 
   return appState.multimedia.filter((item) => {
+    const tipoItem = normalizarTipoMultimedia(item);
     const coincideCategoria = categoria === 'Todos' || item.categoria === categoria;
-    const coincideTipo = !tipo || item.tipoMultimedia === tipo;
+    const coincideTipo = !tipo || tipoItem === tipo;
 
     const texto = normalizarTexto([
       item.titulo,
@@ -1815,12 +1871,114 @@ function filtrarMultimedia() {
   });
 }
 
-function iconoMultimedia(tipo) {
-  const raw = String(tipo || '').toLowerCase();
+function multimediaPublicado(item = {}) {
+  const estado = String(item.estadoContenido || '').trim().toUpperCase();
+  return !estado || estado === 'PUBLICADO';
+}
 
-  if (raw.includes('video')) return '▶';
-  if (raw.includes('audio')) return '♪';
-  if (raw.includes('info')) return '■';
+function normalizarTipoMultimedia(item = {}) {
+  return String(item.tipoFuente || item.tipoMultimedia || '')
+    .trim()
+    .toUpperCase();
+}
+
+function obtenerUrlPrincipalMultimedia(item = {}) {
+  return String(item.urlContenido || item.urlMultimedia || item.urlEmbed || '').trim();
+}
+
+function multimediaAccionPrincipal(item = {}) {
+  const tipo = normalizarTipoMultimedia(item);
+
+  if (tipo === 'ENLACE') {
+    return Boolean(obtenerUrlPrincipalMultimedia(item));
+  }
+
+  if (tipo === 'FACEBOOK') {
+    return Boolean(obtenerUrlPrincipalMultimedia(item));
+  }
+
+  if (tipo === 'VIDEO') {
+    return Boolean(obtenerEmbedMultimedia(item));
+  }
+
+  if (tipo === 'IMAGEN') {
+    return Boolean(obtenerUrlPrincipalMultimedia(item));
+  }
+
+  return Boolean(obtenerEmbedMultimedia(item));
+}
+
+function obtenerEmbedMultimedia(item = {}) {
+  const tipo = normalizarTipoMultimedia(item);
+  const embedDirecto = String(item.urlEmbed || '').trim();
+  const url = obtenerUrlPrincipalMultimedia(item);
+
+  if (embedDirecto) {
+    return embedDirecto;
+  }
+
+  if (tipo === 'FACEBOOK') {
+    return construirEmbedFacebook(url);
+  }
+
+  if (tipo === 'VIDEO') {
+    return construirEmbedYouTube(url);
+  }
+
+  return '';
+}
+
+function construirEmbedYouTube(url) {
+  const link = String(url || '').trim();
+
+  if (!link) {
+    return '';
+  }
+
+  try {
+    const parsed = new URL(link);
+    const host = parsed.hostname.replace('www.', '');
+    let videoId = '';
+
+    if (host === 'youtu.be') {
+      videoId = parsed.pathname.split('/').filter(Boolean)[0] || '';
+    }
+
+    if (host.includes('youtube.com')) {
+      if (parsed.pathname.startsWith('/watch')) {
+        videoId = parsed.searchParams.get('v') || '';
+      }
+
+      if (parsed.pathname.startsWith('/live/')) {
+        videoId = parsed.pathname.split('/').filter(Boolean)[1] || '';
+      }
+
+      if (parsed.pathname.startsWith('/shorts/')) {
+        videoId = parsed.pathname.split('/').filter(Boolean)[1] || '';
+      }
+
+      if (parsed.pathname.startsWith('/embed/')) {
+        return link;
+      }
+    }
+
+    if (!videoId) {
+      return '';
+    }
+
+    return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
+  } catch (error) {
+    return '';
+  }
+}
+
+function iconoMultimedia(tipo) {
+  const raw = String(tipo || '').toUpperCase();
+
+  if (raw.includes('VIDEO')) return '▶';
+  if (raw.includes('FACEBOOK')) return 'f';
+  if (raw.includes('IMAGEN')) return '▧';
+  if (raw.includes('ENLACE')) return '↗';
 
   return '↗';
 }
@@ -2738,24 +2896,49 @@ function verMultimedia(id) {
 
   appState.multimediaActualId = id;
 
-  if (!item.urlEmbed) {
-    appState.multimediaModal = 'info';
+  const tipo = normalizarTipoMultimedia(item);
+  const url = obtenerUrlPrincipalMultimedia(item);
+
+  if (tipo === 'ENLACE' && url) {
+    window.location.href = url;
+    return;
+  }
+
+  if (tipo === 'FACEBOOK') {
+    appState.multimediaModal = 'ver';
     renderApp();
     return;
   }
 
-  appState.multimediaModal = 'ver';
+  if (tipo === 'VIDEO' && obtenerEmbedMultimedia(item)) {
+    appState.multimediaModal = 'ver';
+    renderApp();
+    return;
+  }
+
+  if (tipo === 'IMAGEN' && url) {
+    appState.multimediaModal = 'ver';
+    renderApp();
+    return;
+  }
+
+  appState.multimediaModal = 'info';
   renderApp();
 }
 
 function abrirMultimediaReciente() {
-  const item = obtenerMultimediaActual();
+  const item = obtenerMultimediaInicioActual();
 
   appState.vistaActual = 'multimedia';
 
   if (item && item.id) {
     appState.multimediaActualId = item.id;
-    appState.multimediaModal = item.urlEmbed ? 'ver' : 'info';
+
+    if (obtenerEmbedMultimedia(item) || normalizarTipoMultimedia(item) === 'IMAGEN') {
+      appState.multimediaModal = 'ver';
+    } else {
+      appState.multimediaModal = 'info';
+    }
   }
 
   renderApp();

@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.49
+Versión: v1.10.2.50
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.49';
+const APP_VERSION = 'v1.10.2.50';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -1218,15 +1218,16 @@ function renderInicioBannerMultimedia() {
   const titulo = item.titulo || 'Multimedia';
   const detalle = item.descripcion || '';
   const tipo = normalizarTipoMultimedia(item);
+   const miniatura = obtenerMiniaturaMultimedia(item);
 
   return `
     <button class="home-feature-card media-feature-card" type="button" data-action="multimedia-reciente">
       <div class="feature-visual">
-        ${item.urlVistaPrevia ? `
-          <img src="${escapeHTML(item.urlVistaPrevia)}" alt="${escapeHTML(titulo)}" />
-        ` : `
-          <span>${escapeHTML(iconoMultimedia(tipo || 'VIDEO'))}</span>
-        `}
+${miniatura ? `
+  <img src="${escapeHTML(miniatura)}" alt="${escapeHTML(titulo)}" />
+` : `
+  <span>${escapeHTML(iconoMultimedia(tipo || 'VIDEO'))}</span>
+`}
 
         <i class="feature-play">▶</i>
 
@@ -1935,38 +1936,73 @@ function construirEmbedYouTube(url) {
     return '';
   }
 
+  if (link.includes('/embed/')) {
+    return link;
+  }
+
+  const videoId = obtenerYouTubeVideoId(link);
+
+  if (!videoId) {
+    return '';
+  }
+
+  return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
+}
+
+function obtenerMiniaturaMultimedia(item = {}) {
+  const miniaturaDirecta = String(item.urlVistaPrevia || item.miniaturaUrl || '').trim();
+
+  if (miniaturaDirecta) {
+    return miniaturaDirecta;
+  }
+
+  if (normalizarTipoMultimedia(item) !== 'VIDEO') {
+    return '';
+  }
+
+  const videoId = obtenerYouTubeVideoId(obtenerUrlPrincipalMultimedia(item));
+
+  if (!videoId) {
+    return '';
+  }
+
+  return `https://img.youtube.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg`;
+}
+
+function obtenerYouTubeVideoId(url) {
+  const link = String(url || '').trim();
+
+  if (!link) {
+    return '';
+  }
+
   try {
     const parsed = new URL(link);
     const host = parsed.hostname.replace('www.', '');
-    let videoId = '';
 
     if (host === 'youtu.be') {
-      videoId = parsed.pathname.split('/').filter(Boolean)[0] || '';
+      return parsed.pathname.split('/').filter(Boolean)[0] || '';
     }
 
     if (host.includes('youtube.com')) {
       if (parsed.pathname.startsWith('/watch')) {
-        videoId = parsed.searchParams.get('v') || '';
+        return parsed.searchParams.get('v') || '';
       }
 
       if (parsed.pathname.startsWith('/live/')) {
-        videoId = parsed.pathname.split('/').filter(Boolean)[1] || '';
+        return parsed.pathname.split('/').filter(Boolean)[1] || '';
       }
 
       if (parsed.pathname.startsWith('/shorts/')) {
-        videoId = parsed.pathname.split('/').filter(Boolean)[1] || '';
+        return parsed.pathname.split('/').filter(Boolean)[1] || '';
       }
 
       if (parsed.pathname.startsWith('/embed/')) {
-        return link;
+        return parsed.pathname.split('/').filter(Boolean)[1] || '';
       }
     }
 
-    if (!videoId) {
-      return '';
-    }
-
-    return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`;
+    return '';
   } catch (error) {
     return '';
   }

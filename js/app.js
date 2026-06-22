@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.54
+Versión: v1.10.2.55
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.54';
+const APP_VERSION = 'v1.10.2.55';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -79,6 +79,8 @@ multimediaCategoria: 'Todos',
 multimediaTipo: '',
 multimediaCarouselIndex: 0,
 multimediaCarouselTimer: null,
+facebookCarouselIndex: 0,
+facebookCarouselTimer: null,
 facebookModal: false,
 avisos: [],
 avisosCanal: null,
@@ -264,6 +266,7 @@ if (destacado && destacado.id && !appState.multimediaActualId) {
 }
 
 iniciarCarruselMultimedia();
+iniciarCarruselFacebook();
 
 renderApp();
 
@@ -1261,7 +1264,7 @@ function renderInicioBannerFacebook() {
 const urlEmbed = obtenerEmbedFacebook(item);
 
   return `
-    <button class="home-feature-card facebook-feature-card" type="button" data-action="facebook-modal-abrir">
+   <button id="homeFacebookFeature" class="home-feature-card facebook-feature-card" type="button" data-action="facebook-modal-abrir">
       <div class="feature-visual fb-feature-visual ${urlEmbed ? 'has-fb-embed' : ''}">
         ${urlEmbed ? `
           <div class="fb-feature-embed-wrap">
@@ -1968,18 +1971,44 @@ function detenerCarruselMultimedia() {
   }
 }
 
+function obtenerFacebookItemsInicio() {
+  return appState.multimedia
+    .filter((item) => {
+      return normalizarTipoMultimedia(item) === 'FACEBOOK' &&
+        multimediaPublicado(item) &&
+        item.activo !== false &&
+        item.mostrarEnInicio === true;
+    })
+    .sort((a, b) => {
+      const destacadoA = a.destacadoInicio === true ? 0 : 1;
+      const destacadoB = b.destacadoInicio === true ? 0 : 1;
+
+      if (destacadoA !== destacadoB) {
+        return destacadoA - destacadoB;
+      }
+
+      const ordenA = Number(a.orden || 0);
+      const ordenB = Number(b.orden || 0);
+
+      if (ordenA !== ordenB) {
+        return ordenA - ordenB;
+      }
+
+      return new Date(b.fechaPublicacion || b.fechaRegistro || b._createdDate || 0).getTime() -
+        new Date(a.fechaPublicacion || a.fechaRegistro || a._createdDate || 0).getTime();
+    });
+}
+
 function obtenerFacebookInicioActual() {
-  const facebookItems = appState.multimedia.filter((item) => {
-    return normalizarTipoMultimedia(item) === 'FACEBOOK' && multimediaPublicado(item);
-  });
+  const items = obtenerFacebookItemsInicio();
 
-  const destacado = facebookItems.find((item) => {
-    return item.mostrarEnInicio === true && item.destacadoInicio === true;
-  });
+  if (!items.length) {
+    return {};
+  }
 
-  const inicio = facebookItems.find((item) => item.mostrarEnInicio === true);
+  const index = appState.facebookCarouselIndex % items.length;
 
-  return destacado || inicio || facebookItems[0] || {};
+  return items[index] || items[0] || {};
 }
 
 function obtenerCategoriasMultimedia() {
@@ -2012,6 +2041,57 @@ function filtrarMultimedia() {
 
     return coincideCategoria && coincideTipo && coincideTexto;
   });
+}
+
+function iniciarCarruselFacebook() {
+  detenerCarruselFacebook();
+
+  const items = obtenerFacebookItemsInicio();
+
+  if (items.length <= 1) {
+    return;
+  }
+
+  appState.facebookCarouselTimer = window.setInterval(() => {
+    const actuales = obtenerFacebookItemsInicio();
+
+    if (actuales.length <= 1) {
+      detenerCarruselFacebook();
+      return;
+    }
+
+    appState.facebookCarouselIndex = (appState.facebookCarouselIndex + 1) % actuales.length;
+
+    if (appState.currentView === 'inicio') {
+      actualizarCarruselFacebookHome();
+    }
+  }, 5000);
+}
+
+function detenerCarruselFacebook() {
+  if (appState.facebookCarouselTimer) {
+    window.clearInterval(appState.facebookCarouselTimer);
+    appState.facebookCarouselTimer = null;
+  }
+}
+
+function actualizarCarruselFacebookHome() {
+  const card = document.getElementById('homeFacebookFeature');
+
+  if (!card) {
+    return;
+  }
+
+  card.outerHTML = renderInicioBannerFacebook();
+
+  const nuevaCard = document.getElementById('homeFacebookFeature');
+
+  if (nuevaCard) {
+    nuevaCard.addEventListener('click', () => {
+      appState.facebookModal = true;
+      renderApp();
+    });
+  }
 }
 
 function multimediaPublicado(item = {}) {

@@ -1,7 +1,7 @@
 /*
 MORENA QRO Capacitación
 Archivo: js/app.js
-Versión: v1.10.2.51
+Versión: v1.10.2.52
 Alcance: lógica base de navegación PWA usuario
 */
 
@@ -9,7 +9,7 @@ Alcance: lógica base de navegación PWA usuario
    BLOQUE 01. CONFIGURACIÓN
    ========================================================= */
 
-const APP_VERSION = 'v1.10.2.51';
+const APP_VERSION = 'v1.10.2.52';
 const MOR_API_USUARIO = 'https://www.scad.mx/_functions/morUsuario';
 const MOR_API_DOCUMENTOS = 'https://www.scad.mx/_functions/morDocumentos';
 const MOR_API_MULTIMEDIA = 'https://www.scad.mx/_functions/morMultimedia';
@@ -1846,13 +1846,59 @@ function obtenerMultimediaInicioActual() {
 }
 
 function construirEmbedFacebook(url) {
-  const link = String(url || '').trim();
+  const link = normalizarUrlFacebookEmbed(url);
 
   if (!link) {
     return '';
   }
 
   return `https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(link)}&show_text=true&width=500`;
+}
+
+function normalizarUrlFacebookEmbed(url) {
+  const link = String(url || '').trim();
+
+  if (!link) {
+    return '';
+  }
+
+  try {
+    const parsed = new URL(link);
+
+    if (
+      !parsed.hostname.includes('facebook.com') &&
+      !parsed.hostname.includes('fb.watch')
+    ) {
+      return link;
+    }
+
+    parsed.protocol = 'https:';
+
+    if (parsed.hostname === 'web.facebook.com' || parsed.hostname === 'm.facebook.com') {
+      parsed.hostname = 'www.facebook.com';
+    }
+
+    const parametrosPermitidos = new Set([
+      'story_fbid',
+      'id',
+      'fbid',
+      'v'
+    ]);
+
+    Array.from(parsed.searchParams.keys()).forEach((key) => {
+      if (!parametrosPermitidos.has(key)) {
+        parsed.searchParams.delete(key);
+      }
+    });
+
+    parsed.hash = '';
+
+    return parsed.toString();
+  } catch (error) {
+    return link
+      .replace('://web.facebook.com/', '://www.facebook.com/')
+      .replace('://m.facebook.com/', '://www.facebook.com/');
+  }
 }
 
 function iniciarCarruselMultimedia() {
